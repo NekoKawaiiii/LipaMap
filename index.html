@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LipaMap – GIS Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ══════════════ TOAST ══════════════ -->
+<div class="success-toast" id="toast"></div>
+
+<!-- ══════════════ LOGIN MODAL ══════════════ -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-logo">🌿</div>
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to unlock editing and location management tools.</p>
+    <div class="modal-input-wrap">
+      <span class="lock-icon">🔒</span>
+      <input type="password" id="adminPassword" placeholder="Enter password..." />
+    </div>
+    <div class="modal-error" id="loginError">Incorrect password. Please try again.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeLogin()">Cancel</button>
+      <button class="btn-login" onclick="attemptLogin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ APP SHELL ══════════════ -->
+<div class="app-shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <!-- Hamburger button — only visible on mobile/tablet -->
+      <button class="hamburger-btn" onclick="openMobileMenu()">☰</button>
+      <div class="logo-mark">🌿</div>
+      <span class="app-title">LipaMap</span>
+      <span class="app-subtitle">GIS Dashboard · Green Infrastructure &amp; Waste Management · Lipa City, Batangas</span>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="Search" onclick="focusSearch()">🔍</button>
+      <button class="icon-btn admin-only" id="addPlaceBtn" title="Add New Place" onclick="openAddPanel()">
+        ➕
+        <span class="admin-badge show"></span>
+      </button>
+      <button class="icon-btn" title="Settings" onclick="openSettings()">⚙️</button>
+      <button class="icon-btn" title="Help" onclick="showAbout()">❓</button>
+      <button class="icon-btn hide-on-mobile" title="Contact" onclick="showContact()">✉️</button>
+    </div>
+  </header>
+
+  <div class="body-row">
+
+    <!-- LEFT SIDEBAR (desktop/tablet) -->
+    <nav class="sidebar" id="mainSidebar">
+      <div class="nav-section">
+        <div class="nav-item nav-home" onclick="showAll()">
+          <span class="nav-icon">🏠</span> Home
+        </div>
+      </div>
+
+      <div class="nav-label">Green Infrastructure</div>
+      <div class="nav-section">
+        <div class="nav-item" id="nav-park"       onclick="soloLayer('park')">       <span class="nav-icon">🌳</span> Parks</div>
+        <div class="nav-item" id="nav-garden"     onclick="soloLayer('garden')">     <span class="nav-icon">🌱</span> Community Gardens</div>
+        <div class="nav-item" id="nav-forest"     onclick="soloLayer('forest')">     <span class="nav-icon">🌲</span> Urban Forests</div>
+        <div class="nav-item" id="nav-wetland"    onclick="soloLayer('wetland')">    <span class="nav-icon">💧</span> Wetlands</div>
+      </div>
+
+      <div class="nav-label">Waste Management</div>
+      <div class="nav-section">
+        <div class="nav-item" id="nav-recycle"    onclick="soloLayer('recycle')">    <span class="nav-icon">♻️</span> Recycling Centers</div>
+        <div class="nav-item" id="nav-compost"    onclick="soloLayer('compost')">    <span class="nav-icon">🍂</span> Composting Sites</div>
+        <div class="nav-item" id="nav-collection" onclick="soloLayer('collection')"> <span class="nav-icon">🚛</span> Collection Points</div>
+      </div>
+
+      <div class="nav-divider"></div>
+
+      <div class="nav-label">More</div>
+      <div class="nav-section">
+        <div class="nav-item" onclick="showAbout()">   <span class="nav-icon">📖</span> About the Area</div>
+        <div class="nav-item" onclick="showContact()"> <span class="nav-icon">✉️</span> Contact / Feedback</div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="s-icon">🔍</span>
+          <input id="search" class="search-input" placeholder="Search locations..." />
+        </div>
+        <div class="chips" id="chipsRow">
+          <button class="chip active" data-cat="park"       onclick="chipFilter('park')">🌳 Parks</button>
+          <button class="chip active" data-cat="garden"     onclick="chipFilter('garden')">🌱 Gardens</button>
+          <button class="chip active" data-cat="forest"     onclick="chipFilter('forest')">🌲 Forests</button>
+          <button class="chip active" data-cat="wetland"    onclick="chipFilter('wetland')">💧 Wetlands</button>
+          <button class="chip active" data-cat="recycle"    onclick="chipFilter('recycle')">♻️ Recycling</button>
+          <button class="chip active" data-cat="compost"    onclick="chipFilter('compost')">🍂 Compost</button>
+          <button class="chip active" data-cat="collection" onclick="chipFilter('collection')">🚛 Collection</button>
+        </div>
+      </div>
+
+      <!-- MAP -->
+      <div id="map"></div>
+
+      <!-- BOTTOM TABS -->
+      <div class="bottom-tabs">
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchTab('updates',this)">📢 Recent Updates</button>
+          <button class="tab-btn" onclick="switchTab('added',this)">📍 Last Added</button>
+          <button class="tab-btn" onclick="switchTab('notices',this)">🔔 System Notices</button>
+        </div>
+        <div class="tab-content" id="tab-updates">
+          <div class="tab-item">🌳 New park bench installed at Lipa City Park — Dec 2025</div>
+          <div class="tab-item">♻️ Recycling drive held at City Proper — Nov 2025</div>
+          <div class="tab-item">🌱 Garden expansion approved for Brgy. San Jose — Oct 2025</div>
+          <div class="tab-item">💧 Wetland restoration phase 1 completed — Oct 2025</div>
+        </div>
+        <div class="tab-content hidden" id="tab-added">
+          <div class="tab-item" id="lastAddedList">💧 Wetland Reserve – Brgy. Lodlod added</div>
+        </div>
+        <div class="tab-content hidden" id="tab-notices">
+          <div class="tab-item">⚠️ Map data updated quarterly. Last update: <b>Dec 2025</b></div>
+          <div class="tab-item">🔐 Admin login required to edit location data.</div>
+          <div class="tab-item">📧 Corrections: lipamap@lipa.gov.ph</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT STATS SIDEBAR -->
+    <div class="stats-sidebar" id="statsSidebar">
+      <div class="stats-title">Statistics</div>
+      <div class="stat-card"><div class="stat-num" id="parkCount">0</div><div class="stat-label">Parks</div></div>
+      <div class="stat-card"><div class="stat-num" id="forestCount">0</div><div class="stat-label">Forests</div></div>
+      <div class="stat-card"><div class="stat-num" id="gardenCount">0</div><div class="stat-label">Gardens</div></div>
+      <div class="stat-card"><div class="stat-num" id="wetlandCount">0</div><div class="stat-label">Wetlands</div></div>
+      <div class="stat-card"><div class="stat-num" id="recycleCount">0</div><div class="stat-label">Recycling</div></div>
+      <div class="stat-card"><div class="stat-num" id="compostCount">0</div><div class="stat-label">Compost</div></div>
+      <div class="stat-card"><div class="stat-num" id="collectionCount">0</div><div class="stat-label">Collection</div></div>
+
+      <div class="legend-box">
+        <div class="legend-title">Legend</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#3b82f6"></span>Parks</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#166534"></span>Forest</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#22c55e"></span>Garden</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#06b6d4"></span>Wetland</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#f59e0b"></span>Recycling</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#92400e"></span>Compost</div>
+        <div class="leg-row"><span class="leg-dot" style="background:#6b7280"></span>Collection</div>
+      </div>
+    </div>
+
+  </div><!-- end body-row -->
+</div><!-- end app-shell -->
+
+<!-- ══════════════ DETAIL PANEL ══════════════ -->
+<div class="detail-panel" id="detailPanel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-img-wrap">
+    <img id="detailImg" src="" alt="" onerror="this.parentElement.style.background='var(--mint-100)';this.style.display='none'" />
+    <div class="detail-img-overlay"></div>
+  </div>
+  <div class="detail-body">
+    <span class="detail-tag" id="detailTag"></span>
+    <h2 id="detailName"></h2>
+    <div class="detail-coords" id="detailCoords"></div>
+    <div class="detail-address" id="detailAddress" style="
+      font-size:0.78rem;
+      color:var(--ink-500);
+      margin-bottom:12px;
+      display:flex;
+      align-items:center;
+      gap:5px;
+    "></div>
+
+    <div class="detail-section">
+      <div class="detail-section-head">About this Place</div>
+      <p id="detailDesc"></p>
+    </div>
+
+    <div class="detail-section" id="detailInfoBlock">
+      <div class="detail-section-head">Details</div>
+      <table class="detail-table" id="detailTable"></table>
+    </div>
+
+   <div class="detail-section admin-only" id="adminEditBlock">
+      <div class="detail-section-head">Admin Tools 🔐</div>
+      <div class="admin-section-wrap">
+        <div class="form-group">
+          <label class="form-label">Location Name</label>
+          <input class="edit-input" id="editName" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="edit-input" id="editDesc" rows="4"></textarea>
+        </div>
+        <button class="btn-save" onclick="saveEdit()">💾 Save Changes</button>
+        <button class="btn-delete" onclick="deleteLocation()" style="
+          width:100%;
+          padding:9px;
+          margin-top:8px;
+          background:linear-gradient(135deg,#ef4444,#991b1b);
+          color:white;
+          border:none;
+          border-radius:8px;
+          cursor:pointer;
+          font-size:0.83rem;
+          font-family:Outfit,sans-serif;
+          font-weight:600;
+          transition:all 0.15s;
+          box-shadow:0 2px 8px rgba(239,68,68,0.3);
+        ">🗑️ Delete this Location</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ADD PLACE PANEL ══════════════ -->
+<div class="add-panel admin-only" id="addPanel">
+  <button class="add-panel-close" onclick="closeAddPanel()">✕</button>
+  <h2>Add New Location</h2>
+  <p class="sub">Fill in the details below to pin a new place on the map.</p>
+
+  <div class="form-section">
+    <div class="form-section-title">Basic Information</div>
+    <div class="form-group">
+      <label class="form-label">Place Name *</label>
+      <input class="edit-input" id="addName" placeholder="e.g. Lipa City Park" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="edit-input" id="addCategory">
+          <option value="park">🌳 Park</option>
+          <option value="garden">🌱 Community Garden</option>
+          <option value="forest">🌲 Urban Forest</option>
+          <option value="wetland">💧 Wetland</option>
+          <option value="recycle">♻️ Recycling Center</option>
+          <option value="compost">🍂 Composting Site</option>
+          <option value="collection">🚛 Collection Point</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <textarea class="edit-input" id="addDesc" rows="3" placeholder="Describe this location..."></textarea>
+    </div>
+    <div class="form-group">
+  <label class="form-label">Address *</label>
+  <input class="edit-input" id="addAddress" placeholder="e.g. Brgy. San Jose, Lipa City, Batangas" />
+</div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Coordinates</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Latitude *</label>
+        <input class="edit-input" id="addLat" placeholder="13.9415" type="number" step="0.0001" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Longitude *</label>
+        <input class="edit-input" id="addLng" placeholder="121.1637" type="number" step="0.0001" />
+      </div>
+    </div>
+    <p style="font-size:0.73rem;color:var(--ink-400);margin-top:4px">
+      💡 Tip: Right-click any spot on Google Maps and copy the coordinates.
+    </p>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Photo</div>
+    <div class="img-preview-box" id="imgPreviewBox">
+      <img id="imgPreview" src="" alt="" />
+      <div class="upload-hint">
+        <div class="upload-icon">🖼️</div>
+        <div>Paste image URL below</div>
+      </div>
+    </div>
+    <div class="form-group">
+  <label class="form-label">Upload Image</label>
+  <input type="file" class="edit-input" id="addImg" 
+    accept="image/*" onchange="previewImageFile(this)" />
+</div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Extra Details (optional)</div>
+    <div class="info-rows" id="infoRows">
+      <div class="info-row">
+        <input class="edit-input" placeholder="Label (e.g. Operating Hours)" />
+        <input class="edit-input" placeholder="Value (e.g. 6am–9pm)" />
+        <button class="btn-remove-row" onclick="removeInfoRow(this)">✕</button>
+      </div>
+    </div>
+    <button class="btn-add-row" onclick="addInfoRow()">＋ Add another detail</button>
+  </div>
+
+  <button class="btn-submit" onclick="submitNewPlace()">📍 Add to Map</button>
+</div>
+
+<!-- ══════════════ SETTINGS PANEL ══════════════ -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h3>⚙️ Settings</h3>
+    <button onclick="closeSettings()">✕</button>
+  </div>
+  <div class="settings-scroll">
+    <div class="settings-section">
+      <div class="settings-section-title">Map Display</div>
+      <label class="toggle-row"><span>Show City Boundary</span><input type="checkbox" checked onchange="toggleBoundary(this.checked)" /></label>
+      <label class="toggle-row"><span>Show Heatmap</span><input type="checkbox" id="heatToggle" onchange="toggleHeatmap(this.checked)" /></label>
+      <label class="toggle-row"><span>Satellite View</span><input type="checkbox" onchange="toggleSatellite(this.checked)" /></label>
+    </div>
+    <div class="settings-section admin-only">
+      <div class="settings-section-title">Admin Controls 🔐</div>
+      <p class="settings-note">Visible to admins only.</p>
+      <label class="toggle-row"><span>Allow Public Comments</span><input type="checkbox" /></label>
+      <label class="toggle-row"><span>Show Unverified Locations</span><input type="checkbox" /></label>
+      <button class="btn-danger" onclick="showToast('Export feature coming soon!')">📤 Export All Data (CSV)</button>
+      <button class="btn-danger" onclick="showToast('Backup feature coming soon!')">🗄️ Backup Database</button>
+      <button class="btn-danger" onclick="openCategoryManager()" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(134,239,176,0.12));color:var(--pine-800);border-color:var(--mint-300)">🏷️ Manage Categories</button>
+    </div>
+  </div>
+  <div class="settings-footer">
+    <span id="adminStatusLabel">👁️ Viewer Mode</span>
+    <button id="adminToggleBtn" onclick="openLogin()">🔐 Admin Login</button>
+  </div>
+</div>
+
+<!-- ══════════════ MOBILE DRAWER (phone/tablet nav) ══════════════ -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+<nav class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-header">
+    <span style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--pine-900)">🌿 LipaMap</span>
+    <button onclick="closeMobileMenu()">✕</button>
+  </div>
+  <div class="nav-item nav-home" onclick="showAll();closeMobileMenu()"><span class="nav-icon">🏠</span> Home</div>
+  <div class="nav-label">Green Infrastructure</div>
+  <div class="nav-item" onclick="soloLayer('park');closeMobileMenu()"><span class="nav-icon">🌳</span> Parks</div>
+  <div class="nav-item" onclick="soloLayer('garden');closeMobileMenu()"><span class="nav-icon">🌱</span> Community Gardens</div>
+  <div class="nav-item" onclick="soloLayer('forest');closeMobileMenu()"><span class="nav-icon">🌲</span> Urban Forests</div>
+  <div class="nav-item" onclick="soloLayer('wetland');closeMobileMenu()"><span class="nav-icon">💧</span> Wetlands</div>
+  <div class="nav-label">Waste Management</div>
+  <div class="nav-item" onclick="soloLayer('recycle');closeMobileMenu()"><span class="nav-icon">♻️</span> Recycling Centers</div>
+  <div class="nav-item" onclick="soloLayer('compost');closeMobileMenu()"><span class="nav-icon">🍂</span> Composting Sites</div>
+  <div class="nav-item" onclick="soloLayer('collection');closeMobileMenu()"><span class="nav-icon">🚛</span> Collection Points</div>
+  <div class="nav-divider"></div>
+  <div class="nav-item" onclick="showAbout();closeMobileMenu()"><span class="nav-icon">📖</span> About the Area</div>
+  <div class="nav-item" onclick="showContact();closeMobileMenu()"><span class="nav-icon">✉️</span> Contact / Feedback</div>
+</nav>
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="script.js"></script>
+
+<!-- ══════════════ CATEGORY MANAGER PANEL ══════════════ -->
+<div class="add-panel admin-only" id="categoryPanel" style="width:380px;">
+  <button class="add-panel-close" onclick="closeCategoryManager()">✕</button>
+  <h2>Manage Categories</h2>
+  <p class="sub">Add new location types to the map.</p>
+
+  <div class="form-section">
+    <div class="form-section-title">Add New Category</div>
+    <div class="form-group">
+      <label class="form-label">Category Name * <span style="font-size:0.65rem;color:var(--ink-400)">(no spaces, e.g. solar_panel)</span></label>
+      <input class="edit-input" id="catName" placeholder="e.g. solar_panel" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Display Label *</label>
+      <input class="edit-input" id="catLabel" placeholder="e.g. Solar Panels" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Emoji *</label>
+        <input class="edit-input" id="catEmoji" placeholder="e.g. ☀️" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color *</label>
+        <input type="color" class="edit-input" id="catColor" value="#f59e0b" style="height:38px;padding:2px 4px;cursor:pointer;" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Group *</label>
+      <select class="edit-input" id="catGroup">
+        <option value="green">🌿 Green Infrastructure</option>
+        <option value="waste">🚛 Waste Management</option>
+      </select>
+    </div>
+    <button class="btn-submit" onclick="submitNewCategory()" style="margin-top:8px">🏷️ Add Category</button>
+  </div>
+
+  <div class="form-section">
+    <div class="form-section-title">Existing Custom Categories</div>
+    <div id="customCategoryList" style="display:flex;flex-direction:column;gap:8px;">
+      <p style="font-size:0.78rem;color:var(--ink-400);">No custom categories yet.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
