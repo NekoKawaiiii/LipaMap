@@ -17,7 +17,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ─── YOUR NEON DATABASE CONNECTION STRING ───
 # Paste your Neon connection string here!
-DATABASE_URL = "postgresql://neondb_owner:npg_x4YH6SOkKnoG@ep-purple-credit-a11kchlw-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+import os
+DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_x4YH6SOkKnoG@ep-purple-credit-a11kchlw-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 
 # ─── CONNECT TO DATABASE ───
 def get_db():
@@ -203,12 +205,24 @@ def delete_category(category_id):
     try:
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute('DELETE FROM categories WHERE id = %s', (category_id,))
+
+        # First get the category name
+        cursor.execute('SELECT name FROM categories WHERE id = %s', (category_id,))
+        row = cursor.fetchone()
+
+        if row:
+            category_name = row[0]
+            # Delete all locations with this category
+            cursor.execute('DELETE FROM locations WHERE category = %s', (category_name,))
+            # Then delete the category
+            cursor.execute('DELETE FROM categories WHERE id = %s', (category_id,))
+
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({'message': 'Category deleted!'}), 200
+        return jsonify({'message': 'Category and its locations deleted!'}), 200
     except Exception as e:
+        print('Error:', str(e))
         return jsonify({'message': 'Error: ' + str(e)}), 500
     
 # ─── START THE SERVER ───
