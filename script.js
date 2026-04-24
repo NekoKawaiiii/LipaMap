@@ -446,7 +446,7 @@ function submitNewPlace() {
   var lat      = parseFloat(document.getElementById('addLat').value);
   var lng      = parseFloat(document.getElementById('addLng').value);
   var imgFile  = document.getElementById('addImg').files[0];
-  var address  = document.getElementById('addAddress').value.trim();
+  var address  = document.getElementById('addBarangay').value.trim();
 
   if (!name)                  { showToast('⚠️ Please enter a place name.'); return; }
   if (!desc)                  { showToast('⚠️ Please enter a description.'); return; }
@@ -498,7 +498,7 @@ function submitNewPlace() {
     document.getElementById('addLat').value     = '';
     document.getElementById('addLng').value     = '';
     document.getElementById('addImg').value     = '';
-    document.getElementById('addAddress').value = '';
+    document.getElementById('addBarangay').value = '';
     document.getElementById('infoRows').innerHTML =
       '<div class="info-row">' +
         '<input class="edit-input" placeholder="Label (e.g. Operating Hours)" />' +

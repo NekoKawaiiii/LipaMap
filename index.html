@@ -254,8 +254,85 @@
       <textarea class="edit-input" id="addDesc" rows="3" placeholder="Describe this location..."></textarea>
     </div>
     <div class="form-group">
-  <label class="form-label">Address *</label>
-  <input class="edit-input" id="addAddress" placeholder="e.g. Brgy. San Jose, Lipa City, Batangas" />
+  <label class="form-label">Barangay *</label>
+  <select class="edit-input" id="addBarangay">
+    <option value="">-- Select Barangay --</option>
+    <option value="Brgy. Anilao, Lipa City, Batangas">Anilao</option>
+    <option value="Brgy. Anilao-Labac, Lipa City, Batangas">Anilao-Labac</option>
+    <option value="Brgy. Antipolo Del Norte, Lipa City, Batangas">Antipolo Del Norte</option>
+    <option value="Brgy. Antipolo Del Sur, Lipa City, Batangas">Antipolo Del Sur</option>
+    <option value="Brgy. Bagong Pook, Lipa City, Batangas">Bagong Pook</option>
+    <option value="Brgy. Balintawak, Lipa City, Batangas">Balintawak</option>
+    <option value="Brgy. Banaybanay, Lipa City, Batangas">Banaybanay</option>
+    <option value="Brgy. Bangkuwit, Lipa City, Batangas">Bangkuwit</option>
+    <option value="Brgy. Bugtong na Pulo, Lipa City, Batangas">Bugtong na Pulo</option>
+    <option value="Brgy. Bulacnin, Lipa City, Batangas">Bulacnin</option>
+    <option value="Brgy. Bulaklak, Lipa City, Batangas">Bulaklak</option>
+    <option value="Brgy. Bulilan Norte, Lipa City, Batangas">Bulilan Norte</option>
+    <option value="Brgy. Bulilan Sur, Lipa City, Batangas">Bulilan Sur</option>
+    <option value="Brgy. Calamias, Lipa City, Batangas">Calamias</option>
+    <option value="Brgy. Cumba, Lipa City, Batangas">Cumba</option>
+    <option value="Brgy. Dagatan, Lipa City, Batangas">Dagatan</option>
+    <option value="Brgy. Duhatan, Lipa City, Batangas">Duhatan</option>
+    <option value="Brgy. Halang, Lipa City, Batangas">Halang</option>
+    <option value="Brgy. Inosluban, Lipa City, Batangas">Inosluban</option>
+    <option value="Brgy. Kayumanggi, Lipa City, Batangas">Kayumanggi</option>
+    <option value="Brgy. Latag, Lipa City, Batangas">Latag</option>
+    <option value="Brgy. Libjo, Lipa City, Batangas">Libjo</option>
+    <option value="Brgy. Lodlod, Lipa City, Batangas">Lodlod</option>
+    <option value="Brgy. Lumbang, Lipa City, Batangas">Lumbang</option>
+    <option value="Brgy. Mabini, Lipa City, Batangas">Mabini</option>
+    <option value="Brgy. Malagonlong, Lipa City, Batangas">Malagonlong</option>
+    <option value="Brgy. Malitlit, Lipa City, Batangas">Malitlit</option>
+    <option value="Brgy. Marawoy, Lipa City, Batangas">Marawoy</option>
+    <option value="Brgy. Mataas na Lupa, Lipa City, Batangas">Mataas na Lupa</option>
+    <option value="Brgy. Munting Pulo, Lipa City, Batangas">Munting Pulo</option>
+    <option value="Brgy. Pagolingin Bata, Lipa City, Batangas">Pagolingin Bata</option>
+    <option value="Brgy. Pagolingin East, Lipa City, Batangas">Pagolingin East</option>
+    <option value="Brgy. Pagolingin West, Lipa City, Batangas">Pagolingin West</option>
+    <option value="Brgy. Pangao, Lipa City, Batangas">Pangao</option>
+    <option value="Brgy. Pinagkawitan, Lipa City, Batangas">Pinagkawitan</option>
+    <option value="Brgy. Pinagtongulan, Lipa City, Batangas">Pinagtongulan</option>
+    <option value="Brgy. Plaridel, Lipa City, Batangas">Plaridel</option>
+    <option value="Brgy. Poblacion Barangay 1, Lipa City, Batangas">Poblacion Barangay 1</option>
+    <option value="Brgy. Poblacion Barangay 2, Lipa City, Batangas">Poblacion Barangay 2</option>
+    <option value="Brgy. Poblacion Barangay 3, Lipa City, Batangas">Poblacion Barangay 3</option>
+    <option value="Brgy. Poblacion Barangay 4, Lipa City, Batangas">Poblacion Barangay 4</option>
+    <option value="Brgy. Poblacion Barangay 5, Lipa City, Batangas">Poblacion Barangay 5</option>
+    <option value="Brgy. Poblacion Barangay 6, Lipa City, Batangas">Poblacion Barangay 6</option>
+    <option value="Brgy. Poblacion Barangay 7, Lipa City, Batangas">Poblacion Barangay 7</option>
+    <option value="Brgy. Poblacion Barangay 8, Lipa City, Batangas">Poblacion Barangay 8</option>
+    <option value="Brgy. Poblacion Barangay 9, Lipa City, Batangas">Poblacion Barangay 9</option>
+    <option value="Brgy. Poblacion Barangay 10, Lipa City, Batangas">Poblacion Barangay 10</option>
+    <option value="Brgy. Poblacion Barangay 11, Lipa City, Batangas">Poblacion Barangay 11</option>
+    <option value="Brgy. Poblacion Barangay 12, Lipa City, Batangas">Poblacion Barangay 12</option>
+    <option value="Brgy. Pusil, Lipa City, Batangas">Pusil</option>
+    <option value="Brgy. Quezon, Lipa City, Batangas">Quezon</option>
+    <option value="Brgy. Rizal, Lipa City, Batangas">Rizal</option>
+    <option value="Brgy. Sabang, Lipa City, Batangas">Sabang</option>
+    <option value="Brgy. Sampaguita, Lipa City, Batangas">Sampaguita</option>
+    <option value="Brgy. San Benito, Lipa City, Batangas">San Benito</option>
+    <option value="Brgy. San Carlos, Lipa City, Batangas">San Carlos</option>
+    <option value="Brgy. San Celestino, Lipa City, Batangas">San Celestino</option>
+    <option value="Brgy. San Francisco, Lipa City, Batangas">San Francisco</option>
+    <option value="Brgy. San Guillermo, Lipa City, Batangas">San Guillermo</option>
+    <option value="Brgy. San Jose, Lipa City, Batangas">San Jose</option>
+    <option value="Brgy. San Lucas, Lipa City, Batangas">San Lucas</option>
+    <option value="Brgy. San Salvador, Lipa City, Batangas">San Salvador</option>
+    <option value="Brgy. San Sebastian, Lipa City, Batangas">San Sebastian</option>
+    <option value="Brgy. Santiago, Lipa City, Batangas">Santiago</option>
+    <option value="Brgy. Santo Niño, Lipa City, Batangas">Santo Niño</option>
+    <option value="Brgy. Santo Toribio, Lipa City, Batangas">Santo Toribio</option>
+    <option value="Brgy. Sapac, Lipa City, Batangas">Sapac</option>
+    <option value="Brgy. Sico, Lipa City, Batangas">Sico</option>
+    <option value="Brgy. Talisay, Lipa City, Batangas">Talisay</option>
+    <option value="Brgy. Tambo, Lipa City, Batangas">Tambo</option>
+    <option value="Brgy. Tangob, Lipa City, Batangas">Tangob</option>
+    <option value="Brgy. Tanguay, Lipa City, Batangas">Tanguay</option>
+    <option value="Brgy. Tibig, Lipa City, Batangas">Tibig</option>
+    <option value="Brgy. Tipacan, Lipa City, Batangas">Tipacan</option>
+    <option value="Brgy. Unson, Lipa City, Batangas">Unson</option>
+  </select>
 </div>
   </div>
 
