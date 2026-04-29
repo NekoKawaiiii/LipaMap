@@ -7,6 +7,15 @@
 from flask import Flask, request, jsonify, send_from_directory
 import psycopg2
 import os
+import cloudinary
+import cloudinary.uploader
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'decldyhjb'),
+    api_key    = os.environ.get('CLOUDINARY_API_KEY', '226428839186441'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', 'hTbuZ0m87tnLepyLgoMI0OIfjHc')
+)
 
 # Create the Flask app
 app = Flask(__name__)
@@ -109,13 +118,19 @@ def add_location():
         info        = request.form.get('info')
         address     = request.form.get('address')
 
-        # Handle image upload
+        # Handle image upload via Cloudinary
         image_path = None
         if 'image' in request.files:
             image = request.files['image']
             if image.filename != '':
-                image_path = os.path.join(UPLOAD_FOLDER, image.filename)
-                image.save(image_path)
+                # Upload to Cloudinary instead of local folder
+                upload_result = cloudinary.uploader.upload(
+                    image,
+                    folder='lipamap',
+                    resource_type='image'
+                )
+                # Save the Cloudinary URL instead of local path
+                image_path = upload_result['secure_url']
 
         # Save to database
         conn = get_db()
