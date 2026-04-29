@@ -522,7 +522,12 @@ function submitNewPlace() {
 
 function openDetail(data) {
   currentMarkerData = data;
-  document.getElementById('detailImg').src = data.img;
+  // Fix image path for uploaded images
+  var imgSrc = data.img;
+  if (imgSrc && !imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+    imgSrc = '/' + imgSrc;
+  }
+  document.getElementById('detailImg').src = imgSrc;
   document.getElementById('detailTag').textContent  = LABELS[data.category] || data.category;
   document.getElementById('detailName').textContent = data.name;
   document.getElementById('detailCoords').innerHTML =
