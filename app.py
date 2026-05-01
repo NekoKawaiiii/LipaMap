@@ -150,6 +150,56 @@ def add_location():
         print('Error:', str(e))
         return jsonify({'message': 'Error: ' + str(e)}), 500
 
+# ─── UPDATE A LOCATION ───
+@app.route('/api/locations/<int:location_id>', methods=['PUT'])
+def update_location(location_id):
+    try:
+        name        = request.form.get('name')
+        description = request.form.get('description')
+
+        # Handle optional new image upload
+        image_path = None
+        if 'image' in request.files:
+            image = request.files['image']
+            if image.filename != '':
+                upload_result = cloudinary.uploader.upload(
+                    image,
+                    folder='lipamap',
+                    resource_type='image'
+                )
+                image_path = upload_result['secure_url']
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        if image_path:
+            cursor.execute('''
+                UPDATE locations SET name = %s, description = %s, image_path = %s
+                WHERE id = %s
+            ''', (name, description, image_path, location_id))
+        else:
+            cursor.execute('''
+                UPDATE locations SET name = %s, description = %s
+                WHERE id = %s
+            ''', (name, description, location_id))
+
+        conn.commit()
+
+        # Return the updated image_path so the frontend can refresh it
+        if not image_path:
+            cursor.execute('SELECT image_path FROM locations WHERE id = %s', (location_id,))
+            row = cursor.fetchone()
+            image_path = row[0] if row else ''
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({'message': 'Location updated!', 'image_path': image_path or ''}), 200
+
+    except Exception as e:
+        print('Error:', str(e))
+        return jsonify({'message': 'Error: ' + str(e)}), 500
+
 # ─── DELETE A LOCATION ───
 @app.route('/api/locations/<int:location_id>', methods=['DELETE'])
 def delete_location(location_id):

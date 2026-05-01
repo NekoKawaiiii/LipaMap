@@ -493,6 +493,21 @@ function openDetail(data) {
 
   document.getElementById('editName').value = data.name;
   document.getElementById('editDesc').value = data.desc;
+
+  // Populate the edit image preview with the current photo
+  var editImg  = document.getElementById('editImgPreview');
+  var editHint = document.getElementById('editImgHint');
+  if (data.img) {
+    editImg.src = data.img;
+    editImg.style.display = 'block';
+    editHint.style.display = 'none';
+  } else {
+    editImg.src = '';
+    editImg.style.display = 'none';
+    editHint.style.display = 'flex';
+  }
+  document.getElementById('editImg').value = '';
+
   document.getElementById('detailPanel').classList.add('open');
 }
 
@@ -503,11 +518,73 @@ function closeDetail() {
 
 function saveEdit() {
   if (!currentMarkerData) return;
-  currentMarkerData.name = document.getElementById('editName').value;
-  currentMarkerData.desc = document.getElementById('editDesc').value;
-  document.getElementById('detailName').textContent = currentMarkerData.name;
-  document.getElementById('detailDesc').textContent = currentMarkerData.desc;
-  showToast('✅ Changes saved!');
+
+  var name    = document.getElementById('editName').value.trim();
+  var desc    = document.getElementById('editDesc').value.trim();
+  var imgFile = document.getElementById('editImg').files[0];
+
+  if (!name) { showToast('⚠️ Name cannot be empty.'); return; }
+
+  // If no DB id, just update in-memory (shouldn't happen after migration)
+  if (!currentMarkerData.id) {
+    currentMarkerData.name = name;
+    currentMarkerData.desc = desc;
+    document.getElementById('detailName').textContent = name;
+    document.getElementById('detailDesc').textContent = desc;
+    showToast('✅ Changes saved!');
+    return;
+  }
+
+  var formData = new FormData();
+  formData.append('name',        name);
+  formData.append('description', desc);
+  if (imgFile) formData.append('image', imgFile);
+
+  showToast('⏳ Saving changes...');
+
+  fetch('/api/locations/' + currentMarkerData.id, { method: 'PUT', body: formData })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    currentMarkerData.name = name;
+    currentMarkerData.desc = desc;
+
+    // Update detail panel text
+    document.getElementById('detailName').textContent = name;
+    document.getElementById('detailDesc').textContent = desc;
+
+    // Update image if a new one was uploaded
+    if (imgFile && data.image_path) {
+      currentMarkerData.img = data.image_path;
+      var detailImg = document.getElementById('detailImg');
+      detailImg.src = data.image_path;
+      detailImg.style.display = 'block';
+      // Also refresh the edit preview
+      document.getElementById('editImgPreview').src = data.image_path;
+    }
+
+    // Clear the file input
+    document.getElementById('editImg').value = '';
+
+    showToast('✅ Changes saved!');
+  })
+  .catch(function(err) {
+    console.error(err);
+    showToast('❌ Could not save changes.');
+  });
+}
+
+function previewEditImage(input) {
+  var img  = document.getElementById('editImgPreview');
+  var hint = document.getElementById('editImgHint');
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      img.src = e.target.result;
+      img.style.display = 'block';
+      hint.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
 }
 
 function deleteLocation() {
