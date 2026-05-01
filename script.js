@@ -327,62 +327,6 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
    12. YOUR LOCATION DATA
 ═══════════════════════════════════════ */
 
-addMarker('park', [13.9415, 121.1637],
-  'Lipa City Park', '/ComParkLipa.png',
-  'The main public recreation park at the heart of Lipa City. Features open lawns, walking paths, children\'s playground, and a small amphitheater used for community events.',
-  { 'Operating Hours':'5:00 AM – 9:00 PM', 'Area':'3.2 hectares', 'Managed by':'City Parks & Recreation Office', 'Facilities':'Benches, Playground, Covered Stage', 'Last Updated':'December 2025' }
-);
-
-addMarker('park', [13.9400, 121.1600],
-  'Lipa Riverside Park',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Riverside_park.jpg/640px-Riverside_park.jpg',
-  'A linear park running along the riverbank, ideal for jogging and early morning walks. Features native tree plantings and riverside viewing areas.',
-  { 'Operating Hours':'Open 24 hours', 'Area':'1.8 hectares', 'Trail Length':'1.2 km', 'Managed by':'City Environment Office', 'Last Updated':'November 2025' }
-);
-
-addMarker('forest', [13.9490, 121.1720],
-  'Mt. Malarayat Forest Reserve',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Forest_path.jpg/640px-Forest_path.jpg',
-  'A major forested mountain area serving as the primary green lung of Lipa City. Home to endemic bird species and supports watershed protection for eastern barangays.',
-  { 'Classification':'Protected Forest Reserve', 'Area':'420 hectares', 'Elevation':'600–1,150 MASL', 'Key Species':'Narra, Molave, Philippine Eagle Owl', 'Managed by':'DENR Region IV-A', 'Last Updated':'October 2025' }
-);
-
-addMarker('garden', [13.9350, 121.1500],
-  'Community Garden – Brgy. San Jose',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Vegetable_garden.jpg/640px-Vegetable_garden.jpg',
-  'A community-led urban garden producing fresh vegetables for local households. Established under the city\'s Urban Agriculture Program. Open to volunteer participation on weekends.',
-  { 'Produce':'Kangkong, Sitaw, Talong, Ampalaya', 'Plots Available':'24 plots', 'Area':'0.5 hectares', 'Program':'Urban Agriculture Program', 'Contact':'Brgy. San Jose Hall', 'Last Updated':'December 2025' }
-);
-
-addMarker('wetland', [13.9200, 121.1750],
-  'Wetland Reserve – Brgy. Lodlod',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Marshland.jpg/640px-Marshland.jpg',
-  'A natural wetland providing critical habitat for migratory waterbirds and serving as a natural flood buffer for downstream communities. Currently under habitat restoration.',
-  { 'Classification':'Natural Wetland', 'Area':'12 hectares', 'Bird Species':'30+ recorded species', 'Status':'Under Restoration', 'Managed by':'DENR & City ENRO', 'Last Updated':'September 2025' }
-);
-
-addMarker('recycle', [13.9300, 121.1800],
-  'Recycling Center – City Proper',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Recycling_bins.jpg/640px-Recycling_bins.jpg',
-  'The primary city-operated materials recovery facility (MRF). Accepts plastic, paper, metal, and glass. Drop-off open to all residents.',
-  { 'Accepts':'Plastic, Paper, Metal, Glass', 'Capacity':'5 tons/day', 'Operating Hours':'Mon–Sat, 7:00 AM – 5:00 PM', 'Managed by':'City Environment Office', 'Contact':'(043) 123-4567', 'Last Updated':'December 2025' }
-);
-
-addMarker('compost', [13.9550, 121.1600],
-  'Composting Site – Brgy. Anilao',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Compost.jpg/640px-Compost.jpg',
-  'A barangay-level composting facility processing organic kitchen and garden waste. Finished compost is distributed free to community gardens and urban farmers.',
-  { 'Input Material':'Kitchen & Garden Waste', 'Output':'Organic compost (free to residents)', 'Capacity':'800 kg/week', 'Operating Hours':'Mon, Wed, Fri — 8:00 AM – 12:00 PM', 'Managed by':'Brgy. Anilao Council', 'Last Updated':'November 2025' }
-);
-
-addMarker('collection', [13.9380, 121.1680],
-  'Waste Collection Point – Brgy. Marawoy',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Garbage_collection.jpg/640px-Garbage_collection.jpg',
-  'Designated barangay waste collection point serving residential zones in Marawoy. Segregated bins for biodegradable, residual, and recyclable waste.',
-  { 'Collection Schedule':'Mon, Wed, Fri', 'Collection Time':'6:00 AM – 10:00 AM', 'Bins Available':'Biodegradable, Recyclable, Residual', 'Serves':'Approx. 450 households', 'Managed by':'Brgy. Marawoy & City Sanitation', 'Last Updated':'December 2025' }
-);
-
-
 /* ═══════════════════════════════════════
    13. ADD PLACE PANEL
 ═══════════════════════════════════════ */
@@ -482,7 +426,7 @@ function submitNewPlace() {
   fetch('/api/locations', { method: 'POST', body: formData })
   .then(function(response) { return response.json(); })
   .then(function(data) {
-    var imgPath = imgFile ? 'uploads/' + imgFile.name : '';
+    var imgPath = data.image_path || '';
     addMarker(category, [lat, lng], name, imgPath, desc, info, null, address);
 
     var emoji = { park:'🌳', garden:'🌱', forest:'🌲', wetland:'💧', recycle:'♻️', compost:'🍂', collection:'🚛' };
