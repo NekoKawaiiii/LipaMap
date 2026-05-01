@@ -150,6 +150,33 @@ def add_location():
         print('Error:', str(e))
         return jsonify({'message': 'Error: ' + str(e)}), 500
 
+# ─── VERIFY RECAPTCHA + PASSWORD ───
+@app.route('/api/verify-captcha', methods=['POST'])
+def verify_captcha():
+    import urllib.request
+    import urllib.parse
+    import json as _json
+
+    data       = request.get_json()
+    token      = data.get('token', '')
+    password   = data.get('password', '')
+    secret_key = os.environ.get('RECAPTCHA_SECRET_KEY', '6LcfhdMsAAAAAIZnQugz8pOoGXzJoIgf2jmjx8SJ')
+
+    # Verify token with Google
+    params  = urllib.parse.urlencode({'secret': secret_key, 'response': token}).encode()
+    req     = urllib.request.Request('https://www.google.com/recaptcha/api/siteverify', data=params)
+    result  = _json.loads(urllib.request.urlopen(req).read().decode())
+
+    if not result.get('success'):
+        return jsonify({'success': False, 'error': 'CAPTCHA failed'}), 200
+
+    # Check password
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    if password != admin_password:
+        return jsonify({'success': False, 'error': 'Wrong password'}), 200
+
+    return jsonify({'success': True}), 200
+
 # ─── UPDATE A LOCATION ───
 @app.route('/api/locations/<int:location_id>', methods=['PUT'])
 def update_location(location_id):
