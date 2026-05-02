@@ -283,7 +283,13 @@ function toggleHeatmap(show) {
     if (!pts.length) pts = allHeatPoints;
     heatLayer = L.heatLayer(pts, {
       radius: 40, blur: 28, maxZoom: 16,
-      gradient: { 0.0:'#86efac', 0.35:'#facc15', 0.65:'#f97316', 1.0:'#ef4444' }
+      gradient: {
+        0.0:  '#f0fdf6',
+        0.25: '#bbf7d2',
+        0.5:  '#4ade80',
+        0.75: '#16a34a',
+        1.0:  '#14532d'
+      }
     }).addTo(map);
   } else {
     if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
