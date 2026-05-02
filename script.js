@@ -523,6 +523,11 @@ function openDetail(data) {
   document.getElementById('detailName').textContent = data.name;
   document.getElementById('detailCoords').innerHTML =
     '📍 ' + data.coords[0].toFixed(5) + ', ' + data.coords[1].toFixed(5);
+
+  // Street View button — links to Google Maps Street View at this location
+  var svBtn = document.getElementById('streetViewBtn');
+  svBtn.href = 'https://maps.google.com/?cbll=' + data.coords[0] + ',' + data.coords[1] + '&layer=c';
+
   document.getElementById('detailDesc').textContent = data.desc;
 
   var addrEl = document.getElementById('detailAddress');
