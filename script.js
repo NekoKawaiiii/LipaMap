@@ -789,6 +789,92 @@ function showAbout() {
 
 var userLocationMarker  = null;
 var userLocationCircle  = null;
+var userHeadingCone     = null;
+var currentHeading      = null;
+var userLat             = null;
+var userLng             = null;
+
+function makeUserIcon(heading) {
+  // If we have a heading, show a directional cone + dot; otherwise just the pulsing dot
+  if (heading !== null) {
+    return L.divIcon({
+      className: '',
+      iconAnchor: [20, 20],
+      html: '<div style="position:relative;width:40px;height:40px;">' +
+        // Heading cone (triangle pointing up, rotated to heading)
+        '<div style="' +
+          'position:absolute;top:0;left:50%;transform:translateX(-50%) rotate(' + heading + 'deg);' +
+          'transform-origin:bottom center;' +
+          'width:0;height:0;' +
+          'border-left:8px solid transparent;' +
+          'border-right:8px solid transparent;' +
+          'border-bottom:22px solid rgba(59,130,246,0.45);' +
+          'margin-top:-18px;' +
+        '"></div>' +
+        // Blue pulsing dot
+        '<div style="' +
+          'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);' +
+          'width:18px;height:18px;' +
+          'background:#3b82f6;' +
+          'border:3px solid white;' +
+          'border-radius:50%;' +
+          'box-shadow:0 0 0 4px rgba(59,130,246,0.35);' +
+          'animation:pulse-blue 1.5s infinite;' +
+        '"></div>' +
+      '</div>'
+    });
+  }
+  return L.divIcon({
+    className: '',
+    iconAnchor: [10, 10],
+    html: '<div style="' +
+      'width:20px;height:20px;' +
+      'background:#3b82f6;' +
+      'border:3px solid white;' +
+      'border-radius:50%;' +
+      'box-shadow:0 0 0 4px rgba(59,130,246,0.35);' +
+      'animation:pulse-blue 1.5s infinite;' +
+    '"></div>'
+  });
+}
+
+function updateUserMarker() {
+  if (userLat === null || userLocationMarker === null) return;
+  userLocationMarker.setIcon(makeUserIcon(currentHeading));
+}
+
+function startHeadingWatch() {
+  // DeviceOrientationEvent — only works on mobile with compass
+  if (!window.DeviceOrientationEvent) return;
+
+  function handleOrientation(e) {
+    var heading = null;
+    if (e.webkitCompassHeading !== undefined) {
+      // iOS
+      heading = e.webkitCompassHeading;
+    } else if (e.alpha !== null) {
+      // Android (alpha is degrees from north, counterclockwise)
+      heading = 360 - e.alpha;
+    }
+    if (heading !== null) {
+      currentHeading = Math.round(heading);
+      updateUserMarker();
+    }
+  }
+
+  // iOS 13+ requires permission
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(function(state) {
+        if (state === 'granted') {
+          window.addEventListener('deviceorientation', handleOrientation, true);
+        }
+      })
+      .catch(function() {});
+  } else {
+    window.addEventListener('deviceorientation', handleOrientation, true);
+  }
+}
 
 function locateMe() {
   if (!navigator.geolocation) {
@@ -800,36 +886,22 @@ function locateMe() {
 
   navigator.geolocation.getCurrentPosition(
     function (position) {
-      var lat = position.coords.latitude;
-      var lng = position.coords.longitude;
-      var accuracy = position.coords.accuracy; // metres
+      userLat = position.coords.latitude;
+      userLng = position.coords.longitude;
+      var accuracy = position.coords.accuracy;
 
       // Remove previous markers if any
       if (userLocationMarker) map.removeLayer(userLocationMarker);
       if (userLocationCircle)  map.removeLayer(userLocationCircle);
 
-      // Blue pulsing dot for the user's position
-      var userIcon = L.divIcon({
-        className: '',
-        iconAnchor: [10, 10],
-        html: '<div style="' +
-          'width:20px;height:20px;' +
-          'background:#3b82f6;' +
-          'border:3px solid white;' +
-          'border-radius:50%;' +
-          'box-shadow:0 0 0 4px rgba(59,130,246,0.35);' +
-          'animation:pulse-blue 1.5s infinite;' +
-        '"></div>'
-      });
-
-      userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+      userLocationMarker = L.marker([userLat, userLng], { icon: makeUserIcon(currentHeading) })
         .addTo(map)
         .bindPopup('<b>📍 You are here</b><br><span style="font-size:0.75rem;color:#6b7280">' +
-          lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>')
+          userLat.toFixed(5) + ', ' + userLng.toFixed(5) + '</span>')
         .openPopup();
 
       // Accuracy circle
-      userLocationCircle = L.circle([lat, lng], {
+      userLocationCircle = L.circle([userLat, userLng], {
         radius:      accuracy,
         color:       '#3b82f6',
         fillColor:   '#3b82f6',
@@ -838,8 +910,11 @@ function locateMe() {
         dashArray:   '4,4'
       }).addTo(map);
 
-      map.flyTo([lat, lng], 16);
+      map.flyTo([userLat, userLng], 16);
       showToast('✅ Location found!');
+
+      // Start watching compass heading
+      startHeadingWatch();
     },
     function (error) {
       var msg = {
