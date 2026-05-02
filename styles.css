@@ -767,3 +767,132 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
   }
 
 }
+
+/* ─────────────────────────────────────────
+   MOBILE DRAWER — small phone fix
+───────────────────────────────────────── */
+@media (max-width: 400px) {
+  .mobile-drawer {
+    width: 240px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   TOUCH TARGET SIZES
+   Minimum 44px tap targets for close buttons
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .detail-close,
+  .add-panel-close,
+  .settings-header button,
+  .mobile-drawer-header button {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  /* Detail table — prevent overflow on narrow screens */
+  .detail-table td:first-child {
+    width: 38%;
+    font-size: 0.68rem;
+  }
+  .detail-table td:last-child {
+    font-size: 0.76rem;
+  }
+
+  /* Detail body padding tighter on phone */
+  .detail-body {
+    padding: 14px;
+  }
+
+  /* Image preview box shorter on phone */
+  .img-preview-box {
+    height: 100px;
+  }
+
+  /* Bottom tabs — prevent overlap with full-width panels */
+  .bottom-tabs {
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Tab content scrollbar padding for touch */
+  .tab-content {
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Chips scrollbar touch friendly */
+  .chips {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+
+  /* Stats sidebar shown as horizontal strip on phone */
+  /* (already hidden — keep hidden, no change needed) */
+
+  /* Modal max-width safety */
+  .modal-box {
+    max-width: 420px;
+  }
+}
+
+/* ─────────────────────────────────────────
+   LANDSCAPE PHONE
+   e.g. iPhone rotated sideways
+───────────────────────────────────────── */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Shorter topbar in landscape */
+  .topbar {
+    height: 46px;
+  }
+
+  /* Panels take half width in landscape so map is still visible */
+  .detail-panel,
+  .settings-panel {
+    width: 55vw;
+    top: 46px;
+  }
+
+  .add-panel {
+    width: 55vw;
+    top: 46px;
+  }
+
+  /* Shorter map image in detail panel */
+  .detail-img-wrap {
+    height: 110px;
+  }
+
+  /* Shorter bottom tabs */
+  .bottom-tabs {
+    padding: 0 8px 4px;
+  }
+  .tab-btn {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+}
+
+/* ─────────────────────────────────────────
+   TABLET LANDSCAPE
+   iPad rotated sideways
+───────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .sidebar {
+    width: 150px;
+  }
+  .add-panel.open {
+    left: 150px;
+  }
+  .stats-sidebar {
+    width: 115px;
+  }
+  .stat-num {
+    font-size: 1.1rem;
+  }
+  .stat-label {
+    font-size: 0.58rem;
+  }
+}
