@@ -360,6 +360,32 @@ function openAddPanel() {
   document.getElementById('addPanel').classList.add('open');
 }
 
+function fillMyLocation() {
+  if (!navigator.geolocation) {
+    showToast('❌ Geolocation not supported by your browser.');
+    return;
+  }
+  showToast('📍 Getting your location...');
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      var lat = position.coords.latitude.toFixed(6);
+      var lng = position.coords.longitude.toFixed(6);
+      document.getElementById('addLat').value = lat;
+      document.getElementById('addLng').value = lng;
+      showToast('✅ Coordinates filled in!');
+    },
+    function(error) {
+      var msg = {
+        1: '❌ Location access denied.',
+        2: '❌ Location unavailable.',
+        3: '❌ Location request timed out.'
+      }[error.code] || '❌ Could not get location.';
+      showToast(msg);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
 function closeAddPanel() {
   document.getElementById('addPanel').classList.remove('open');
 }
