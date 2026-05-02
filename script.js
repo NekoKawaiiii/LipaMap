@@ -782,6 +782,77 @@ function showAbout() {
   alert('🌿 About Lipa City\n\nLipa City is a highly urbanized city in Batangas, Philippines, known as the "Coffee Capital of the Philippines."\n\nArea: 210.41 km²  |  Population: ~349,000 (2020)\nKnown for: Café de Lipa, Mt. Malarayat, Ayala Malls Solenad\n\nLipaMap tracks green infrastructure and waste management to support environmental awareness, urban planning, and community access to organized data.');
 }
 
+
+/* ═══════════════════════════════════════
+   LOCATE ME — Show user's current position
+═══════════════════════════════════════ */
+
+var userLocationMarker  = null;
+var userLocationCircle  = null;
+
+function locateMe() {
+  if (!navigator.geolocation) {
+    showToast('❌ Geolocation is not supported by your browser.');
+    return;
+  }
+
+  showToast('📍 Finding your location...');
+
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      var lat = position.coords.latitude;
+      var lng = position.coords.longitude;
+      var accuracy = position.coords.accuracy; // metres
+
+      // Remove previous markers if any
+      if (userLocationMarker) map.removeLayer(userLocationMarker);
+      if (userLocationCircle)  map.removeLayer(userLocationCircle);
+
+      // Blue pulsing dot for the user's position
+      var userIcon = L.divIcon({
+        className: '',
+        iconAnchor: [10, 10],
+        html: '<div style="' +
+          'width:20px;height:20px;' +
+          'background:#3b82f6;' +
+          'border:3px solid white;' +
+          'border-radius:50%;' +
+          'box-shadow:0 0 0 4px rgba(59,130,246,0.35);' +
+          'animation:pulse-blue 1.5s infinite;' +
+        '"></div>'
+      });
+
+      userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+        .addTo(map)
+        .bindPopup('<b>📍 You are here</b><br><span style="font-size:0.75rem;color:#6b7280">' +
+          lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>')
+        .openPopup();
+
+      // Accuracy circle
+      userLocationCircle = L.circle([lat, lng], {
+        radius:      accuracy,
+        color:       '#3b82f6',
+        fillColor:   '#3b82f6',
+        fillOpacity: 0.08,
+        weight:      1.5,
+        dashArray:   '4,4'
+      }).addTo(map);
+
+      map.flyTo([lat, lng], 16);
+      showToast('✅ Location found!');
+    },
+    function (error) {
+      var msg = {
+        1: '❌ Location access denied. Please allow location in your browser.',
+        2: '❌ Location unavailable. Try again.',
+        3: '❌ Location request timed out.'
+      }[error.code] || '❌ Could not get your location.';
+      showToast(msg);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
 function showContact() {
   alert('✉️ Contact / Feedback\n\nMaintained by: Lipa City ENRO\nEmail: lipamap@lipa.gov.ph\nPhone: (043) 123-4567\nAddress: City Hall, Lipa City, Batangas\n\nTo report incorrect data, email with subject: [LipaMap Update]');
 }
