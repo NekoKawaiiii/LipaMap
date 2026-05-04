@@ -488,8 +488,26 @@ function submitNewPlace() {
     var emoji = { park:'🌳', garden:'🌱', forest:'🌲', wetland:'💧', recycle:'♻️', compost:'🍂', collection:'🚛' };
     var newItem = document.createElement('div');
     newItem.className = 'tab-item';
-    newItem.innerHTML = (emoji[category]||'📍') + ' <b>' + name + '</b> added just now';
-    document.getElementById('tab-added').prepend(newItem);
+    newItem.style.cursor = 'pointer';
+    newItem.innerHTML = (emoji[category] || LABELS[category] ? (emoji[category]||'📍') : '📍') +
+      ' <b>' + name + '</b> — added just now';
+    newItem.onclick = function() { map.flyTo([lat, lng], 16); };
+
+    // Clear placeholder text and prepend
+    var addedTab = document.getElementById('tab-added');
+    var placeholder = addedTab.querySelector('[style*="italic"]');
+    if (placeholder) placeholder.remove();
+    addedTab.prepend(newItem);
+
+    // Also prepend to Recent Updates tab
+    var updatesTab = document.getElementById('tab-updates');
+    var updateItem = document.createElement('div');
+    updateItem.className = 'tab-item';
+    updateItem.style.cursor = 'pointer';
+    updateItem.innerHTML = (emoji[category]||'📍') + ' <b>' + name + '</b>' +
+      (address ? ' — ' + address.replace(', Lipa City, Batangas','') : '');
+    updateItem.onclick = function() { map.flyTo([lat, lng], 16); };
+    updatesTab.prepend(updateItem);
 
     map.flyTo([lat, lng], 16);
 
@@ -1001,6 +1019,35 @@ function loadLocationsFromDB() {
         loc.address
       );
     });
+
+    // Populate Recent Updates tab with the 5 most recently added locations
+    var updatesTab = document.getElementById('tab-updates');
+    updatesTab.innerHTML = '';
+    var recent = locations.slice().reverse().slice(0, 5);
+    if (recent.length === 0) {
+      updatesTab.innerHTML = '<div class="tab-item" style="color:var(--ink-400);font-style:italic;">No locations yet.</div>';
+    } else {
+      recent.forEach(function(loc) {
+        var emoji = (LABELS[loc.category] ? '' : '📍');
+        // Use category emoji from COLORS map or fallback
+        var catEmoji = {
+          park:'🌳', garden:'🌱', forest:'🌲', wetland:'💧',
+          recycle:'♻️', compost:'🍂', collection:'🚛', mrf:'🏭', solar:'☀️'
+        }[loc.category] || '📍';
+        var item = document.createElement('div');
+        item.className = 'tab-item';
+        item.style.cursor = 'pointer';
+        item.innerHTML = catEmoji + ' <b>' + loc.name + '</b>' +
+          (loc.address ? ' — ' + loc.address.replace(', Lipa City, Batangas','') : '');
+        item.title = 'Click to view on map';
+        (function(l) {
+          item.onclick = function() {
+            map.flyTo([l.latitude, l.longitude], 16);
+          };
+        })(loc);
+        updatesTab.appendChild(item);
+      });
+    }
   })
   .catch(function(error) {
     console.log('Could not load from database:', error);
