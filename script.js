@@ -1175,6 +1175,39 @@ function addCategoryToUI(cat) {
     var legendBox = document.querySelector('.legend-box');
     if (legendBox) legendBox.appendChild(legRow);
   }
+
+  // Add to mobile drawer
+  var mobileId = 'mobile-nav-' + cat.name;
+  if (!document.getElementById(mobileId)) {
+    var mobileItem = document.createElement('div');
+    mobileItem.className = 'nav-item';
+    mobileItem.id = mobileId;
+    mobileItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
+    mobileItem.onclick = function() { soloLayer(cat.name); closeMobileMenu(); };
+
+    // Find the right group divider in the mobile drawer
+    var mobileDrawer = document.getElementById('mobileDrawer');
+    var mobileLabels = mobileDrawer.querySelectorAll('.nav-label');
+    var targetLabel = null;
+    mobileLabels.forEach(function(lbl) {
+      if (cat.group_type === 'green' && lbl.textContent.trim() === 'Green Infrastructure') targetLabel = lbl;
+      if (cat.group_type === 'waste' && lbl.textContent.trim() === 'Waste Management') targetLabel = lbl;
+    });
+
+    if (targetLabel) {
+      // Insert after the last nav-item in that group
+      var next = targetLabel.nextElementSibling;
+      while (next && next.classList.contains('nav-item')) {
+        next = next.nextElementSibling;
+      }
+      mobileDrawer.insertBefore(mobileItem, next);
+    } else {
+      // Fallback: append before the divider
+      var divider = mobileDrawer.querySelector('.nav-divider');
+      if (divider) mobileDrawer.insertBefore(mobileItem, divider);
+      else mobileDrawer.appendChild(mobileItem);
+    }
+  }
 }
 
 
