@@ -8,11 +8,9 @@ from config import get_db
 
 BUILTIN_CATEGORIES = [
     {'name': 'park',       'label': 'Parks',             'emoji': '🌳', 'color': '#3b82f6', 'group_type': 'green'},
-    {'name': 'garden',     'label': 'Community Gardens',  'emoji': '🌱', 'color': '#22c55e', 'group_type': 'green'},
     {'name': 'forest',     'label': 'Urban Forests',      'emoji': '🌲', 'color': '#166534', 'group_type': 'green'},
     {'name': 'wetland',    'label': 'Wetlands',           'emoji': '💧', 'color': '#06b6d4', 'group_type': 'green'},
     {'name': 'recycle',    'label': 'Recycling Centers',  'emoji': '♻️', 'color': '#f59e0b', 'group_type': 'waste'},
-    {'name': 'compost',    'label': 'Composting Sites',   'emoji': '🍂', 'color': '#92400e', 'group_type': 'waste'},
     {'name': 'collection', 'label': 'Collection Points',  'emoji': '🚛', 'color': '#6b7280', 'group_type': 'waste'},
 ]
 
