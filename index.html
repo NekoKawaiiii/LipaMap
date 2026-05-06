@@ -70,19 +70,10 @@
       </div>
 
       <div class="nav-label">Green Infrastructure</div>
-      <div class="nav-section">
-        <div class="nav-item" id="nav-park"       onclick="soloLayer('park')">       <span class="nav-icon">🌳</span> Parks</div>
-        <div class="nav-item" id="nav-garden"     onclick="soloLayer('garden')">     <span class="nav-icon">🌱</span> Community Gardens</div>
-        <div class="nav-item" id="nav-forest"     onclick="soloLayer('forest')">     <span class="nav-icon">🌲</span> Urban Forests</div>
-        <div class="nav-item" id="nav-wetland"    onclick="soloLayer('wetland')">    <span class="nav-icon">💧</span> Wetlands</div>
-      </div>
+      <div class="nav-section" id="sidebar-green"></div>
 
       <div class="nav-label">Waste Management</div>
-      <div class="nav-section">
-        <div class="nav-item" id="nav-recycle"    onclick="soloLayer('recycle')">    <span class="nav-icon">♻️</span> Recycling Centers</div>
-        <div class="nav-item" id="nav-compost"    onclick="soloLayer('compost')">    <span class="nav-icon">🍂</span> Composting Sites</div>
-        <div class="nav-item" id="nav-collection" onclick="soloLayer('collection')"> <span class="nav-icon">🚛</span> Collection Points</div>
-      </div>
+      <div class="nav-section" id="sidebar-waste"></div>
 
       <div class="nav-divider"></div>
 
@@ -102,15 +93,7 @@
           <span class="s-icon">🔍</span>
           <input id="search" class="search-input" placeholder="Search locations..." />
         </div>
-        <div class="chips" id="chipsRow">
-          <button class="chip active" data-cat="park"       onclick="chipFilter('park')">🌳 Parks</button>
-          <button class="chip active" data-cat="garden"     onclick="chipFilter('garden')">🌱 Gardens</button>
-          <button class="chip active" data-cat="forest"     onclick="chipFilter('forest')">🌲 Forests</button>
-          <button class="chip active" data-cat="wetland"    onclick="chipFilter('wetland')">💧 Wetlands</button>
-          <button class="chip active" data-cat="recycle"    onclick="chipFilter('recycle')">♻️ Recycling</button>
-          <button class="chip active" data-cat="compost"    onclick="chipFilter('compost')">🍂 Compost</button>
-          <button class="chip active" data-cat="collection" onclick="chipFilter('collection')">🚛 Collection</button>
-        </div>
+        <div class="chips" id="chipsRow"></div>
       </div>
 
       <!-- MAP -->
@@ -462,14 +445,9 @@
   </div>
   <div class="nav-item nav-home" onclick="showAll();closeMobileMenu()"><span class="nav-icon">🏠</span> Home</div>
   <div class="nav-label">Green Infrastructure</div>
-  <div class="nav-item" onclick="soloLayer('park');closeMobileMenu()"><span class="nav-icon">🌳</span> Parks</div>
-  <div class="nav-item" onclick="soloLayer('garden');closeMobileMenu()"><span class="nav-icon">🌱</span> Community Gardens</div>
-  <div class="nav-item" onclick="soloLayer('forest');closeMobileMenu()"><span class="nav-icon">🌲</span> Urban Forests</div>
-  <div class="nav-item" onclick="soloLayer('wetland');closeMobileMenu()"><span class="nav-icon">💧</span> Wetlands</div>
+  <div id="mobile-green"></div>
   <div class="nav-label">Waste Management</div>
-  <div class="nav-item" onclick="soloLayer('recycle');closeMobileMenu()"><span class="nav-icon">♻️</span> Recycling Centers</div>
-  <div class="nav-item" onclick="soloLayer('compost');closeMobileMenu()"><span class="nav-icon">🍂</span> Composting Sites</div>
-  <div class="nav-item" onclick="soloLayer('collection');closeMobileMenu()"><span class="nav-icon">🚛</span> Collection Points</div>
+  <div id="mobile-waste"></div>
   <div class="nav-divider"></div>
   <div class="nav-item" onclick="showAbout();closeMobileMenu()"><span class="nav-icon">📖</span> About the Area</div>
   <div class="nav-item" onclick="showContact();closeMobileMenu()"><span class="nav-icon">✉️</span> Contact / Feedback</div>
@@ -517,9 +495,9 @@
   </div>
 
   <div class="form-section">
-    <div class="form-section-title">Existing Custom Categories</div>
+    <div class="form-section-title">All Categories</div>
     <div id="customCategoryList" style="display:flex;flex-direction:column;gap:8px;">
-      <p style="font-size:0.78rem;color:var(--ink-400);">No custom categories yet.</p>
+      <p style="font-size:0.78rem;color:var(--ink-400);">Loading...</p>
     </div>
   </div>
 </div>

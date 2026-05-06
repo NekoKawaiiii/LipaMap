@@ -18,7 +18,7 @@ import config  # noqa: F401 — runs cloudinary.config() on import
 
 # ─── MODELS (DB init + seed) ───
 from models.location_model import init_locations_table, seed_locations
-from models.category_model import init_categories_table
+from models.category_model import init_categories_table, seed_categories
 
 # ─── CONTROLLERS (Blueprints) ───
 from controllers.location_controller import location_bp
@@ -49,6 +49,7 @@ def static_files(filename):
 # Runs for both Gunicorn (Render) and direct `python app.py`
 init_locations_table()
 init_categories_table()
+seed_categories()
 seed_locations()
 print('✅ LipaMap is ready!')
 

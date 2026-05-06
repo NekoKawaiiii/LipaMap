@@ -1101,7 +1101,7 @@ function loadCustomCategories() {
   .then(function(cats) {
     var list = document.getElementById('customCategoryList');
     if (cats.length === 0) {
-      list.innerHTML = '<p style="font-size:0.78rem;color:var(--ink-400);">No custom categories yet.</p>';
+      list.innerHTML = '<p style="font-size:0.78rem;color:var(--ink-400);">No categories yet.</p>';
       return;
     }
     list.innerHTML = '';
@@ -1182,20 +1182,8 @@ function addCategoryToUI(cat) {
     navItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
     navItem.onclick = function() { soloLayer(cat.name); };
 
-    var targetSection = null;
-    var allLabels = document.querySelectorAll('.sidebar .nav-label');
-    allLabels.forEach(function(lbl) {
-      if (cat.group_type === 'green' && lbl.textContent.trim() === 'Green Infrastructure') {
-        targetSection = lbl.nextElementSibling;
-      }
-      if (cat.group_type === 'waste' && lbl.textContent.trim() === 'Waste Management') {
-        targetSection = lbl.nextElementSibling;
-      }
-    });
-    if (!targetSection) {
-      var allNavSections = document.querySelectorAll('.sidebar .nav-section');
-      targetSection = allNavSections[allNavSections.length - 2];
-    }
+    var sectionId = cat.group_type === 'waste' ? 'sidebar-waste' : 'sidebar-green';
+    var targetSection = document.getElementById(sectionId);
     if (targetSection) targetSection.appendChild(navItem);
   }
 
@@ -1258,28 +1246,9 @@ function addCategoryToUI(cat) {
     mobileItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
     mobileItem.onclick = function() { soloLayer(cat.name); closeMobileMenu(); };
 
-    // Find the right group divider in the mobile drawer
-    var mobileDrawer = document.getElementById('mobileDrawer');
-    var mobileLabels = mobileDrawer.querySelectorAll('.nav-label');
-    var targetLabel = null;
-    mobileLabels.forEach(function(lbl) {
-      if (cat.group_type === 'green' && lbl.textContent.trim() === 'Green Infrastructure') targetLabel = lbl;
-      if (cat.group_type === 'waste' && lbl.textContent.trim() === 'Waste Management') targetLabel = lbl;
-    });
-
-    if (targetLabel) {
-      // Insert after the last nav-item in that group
-      var next = targetLabel.nextElementSibling;
-      while (next && next.classList.contains('nav-item')) {
-        next = next.nextElementSibling;
-      }
-      mobileDrawer.insertBefore(mobileItem, next);
-    } else {
-      // Fallback: append before the divider
-      var divider = mobileDrawer.querySelector('.nav-divider');
-      if (divider) mobileDrawer.insertBefore(mobileItem, divider);
-      else mobileDrawer.appendChild(mobileItem);
-    }
+    var mobileSectionId = cat.group_type === 'waste' ? 'mobile-waste' : 'mobile-green';
+    var mobileSection = document.getElementById(mobileSectionId);
+    if (mobileSection) mobileSection.appendChild(mobileItem);
   }
 }
 

@@ -6,8 +6,19 @@
 from config import get_db
 
 
+BUILTIN_CATEGORIES = [
+    {'name': 'park',       'label': 'Parks',             'emoji': '🌳', 'color': '#3b82f6', 'group_type': 'green'},
+    {'name': 'garden',     'label': 'Community Gardens',  'emoji': '🌱', 'color': '#22c55e', 'group_type': 'green'},
+    {'name': 'forest',     'label': 'Urban Forests',      'emoji': '🌲', 'color': '#166534', 'group_type': 'green'},
+    {'name': 'wetland',    'label': 'Wetlands',           'emoji': '💧', 'color': '#06b6d4', 'group_type': 'green'},
+    {'name': 'recycle',    'label': 'Recycling Centers',  'emoji': '♻️', 'color': '#f59e0b', 'group_type': 'waste'},
+    {'name': 'compost',    'label': 'Composting Sites',   'emoji': '🍂', 'color': '#92400e', 'group_type': 'waste'},
+    {'name': 'collection', 'label': 'Collection Points',  'emoji': '🚛', 'color': '#6b7280', 'group_type': 'waste'},
+]
+
+
 def get_all_categories():
-    """Return all custom categories from the database."""
+    """Return all categories from the database."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM categories')
@@ -61,13 +72,46 @@ def init_categories_table():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS categories (
             id         SERIAL PRIMARY KEY,
-            name       TEXT NOT NULL,
+            name       TEXT NOT NULL UNIQUE,
             label      TEXT NOT NULL,
             emoji      TEXT NOT NULL,
             color      TEXT NOT NULL,
             group_type TEXT NOT NULL DEFAULT 'green'
         )
     ''')
+    # Add unique constraint to existing table if missing
+    cursor.execute('''
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_constraint WHERE conname = 'categories_name_key'
+            ) THEN
+                ALTER TABLE categories ADD CONSTRAINT categories_name_key UNIQUE (name);
+            END IF;
+        END $$;
+    ''')
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def seed_categories():
+    """Insert built-in categories once; skip any that already exist."""
+    conn = get_db()
+    cursor = conn.cursor()
+    inserted = 0
+    for cat in BUILTIN_CATEGORIES:
+        cursor.execute('''
+            INSERT INTO categories (name, label, emoji, color, group_type)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (name) DO NOTHING
+        ''', (cat['name'], cat['label'], cat['emoji'], cat['color'], cat['group_type']))
+        if cursor.rowcount:
+            inserted += 1
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if inserted:
+        print(f'🏷️  Seeded {inserted} built-in category/categories.')
+    else:
+        print('🏷️  Built-in categories already present, skipping.')
