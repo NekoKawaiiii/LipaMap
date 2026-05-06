@@ -228,22 +228,16 @@ function toggleBoundary(show) {
    7. LAYER GROUPS
 ═══════════════════════════════════════ */
 
-var layers = {
-  park:       L.layerGroup().addTo(map),
-  forest:     L.layerGroup().addTo(map),
-  garden:     L.layerGroup().addTo(map),
-  wetland:    L.layerGroup().addTo(map),
-  recycle:    L.layerGroup().addTo(map),
-  compost:    L.layerGroup().addTo(map),
-  collection: L.layerGroup().addTo(map)
-};
+// Layers and counts are now fully dynamic — populated by addCategoryToUI()
+var layers = {};
+var counts = {};
 
 
 /* ═══════════════════════════════════════
    8. COUNTERS
 ═══════════════════════════════════════ */
 
-var counts = { park:0, forest:0, garden:0, wetland:0, recycle:0, compost:0, collection:0 };
+// counts is declared above with layers
 
 function updateCounts() {
   Object.keys(counts).forEach(function (k) {
@@ -257,25 +251,9 @@ function updateCounts() {
    9. ICONS & COLORS
 ═══════════════════════════════════════ */
 
-var COLORS = {
-  park:       '#3b82f6',
-  forest:     '#166534',
-  garden:     '#22c55e',
-  wetland:    '#06b6d4',
-  recycle:    '#f59e0b',
-  compost:    '#92400e',
-  collection: '#6b7280'
-};
-
-var LABELS = {
-  park:       'Park',
-  forest:     'Urban Forest',
-  garden:     'Community Garden',
-  wetland:    'Wetland',
-  recycle:    'Recycling Center',
-  compost:    'Composting Site',
-  collection: 'Collection Point'
-};
+// COLORS and LABELS are now fully dynamic — populated by addCategoryToUI()
+var COLORS = {};
+var LABELS = {};
 
 function makeIcon(category) {
   var c = COLORS[category] || '#6b7280';
