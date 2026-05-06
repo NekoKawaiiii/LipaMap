@@ -843,6 +843,71 @@ function showAbout() {
 
 
 /* ═══════════════════════════════════════
+   EXPORT TO CSV
+═══════════════════════════════════════ */
+
+function exportToCSV() {
+  showToast('⏳ Preparing export...');
+
+  fetch('/api/locations')
+  .then(function(r) { return r.json(); })
+  .then(function(locations) {
+    if (!locations.length) {
+      showToast('⚠️ No locations to export.');
+      return;
+    }
+
+    // Build CSV rows
+    var headers = ['ID', 'Name', 'Category', 'Description', 'Address', 'Latitude', 'Longitude', 'Image URL'];
+    var rows = [headers];
+
+    locations.forEach(function(loc) {
+      // Parse info JSON for extra details
+      var info = '';
+      if (loc.info) {
+        try {
+          var infoObj = JSON.parse(loc.info);
+          info = Object.entries(infoObj).map(function(e) {
+            return e[0] + ': ' + e[1];
+          }).join(' | ');
+        } catch(e) {}
+      }
+
+      rows.push([
+        loc.id,
+        '"' + (loc.name        || '').replace(/"/g, '""') + '"',
+        '"' + (loc.category    || '').replace(/"/g, '""') + '"',
+        '"' + (loc.description || '').replace(/"/g, '""') + '"',
+        '"' + (loc.address     || '').replace(/"/g, '""') + '"',
+        loc.latitude,
+        loc.longitude,
+        '"' + (loc.image_path  || '').replace(/"/g, '""') + '"'
+      ]);
+    });
+
+    var csvContent = rows.map(function(r) { return r.join(','); }).join('\n');
+
+    // Trigger download
+    var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'LipaMap_Locations_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('✅ Exported ' + locations.length + ' locations!');
+  })
+  .catch(function(err) {
+    console.error(err);
+    showToast('❌ Export failed. Try again.');
+  });
+}
+
+
+/* ═══════════════════════════════════════
    LOCATE ME — Show user's current position
 ═══════════════════════════════════════ */
 
