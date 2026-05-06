@@ -132,8 +132,8 @@ function closeMobileMenu() {
 var LIPA_CENTER = [13.9411, 121.1630];
 
 var lipaBounds = L.latLngBounds(
-  [13.8400, 121.0800],
-  [14.0500, 121.2700]
+  [13.8500, 121.0700],
+  [14.0500, 121.2600]
 );
 
 var map = L.map('map', {
@@ -178,35 +178,36 @@ function toggleSatellite(on) {
 ═══════════════════════════════════════ */
 
 var lipaBoundary = L.polygon([
-  /* North border — along Malvar/Tanauan boundary */
+  /* North — Bulacnin/Malvar border */
   [14.0169, 121.1653],
   [14.0120, 121.1800],
   [14.0054, 121.1717],
   [14.0020, 121.1900],
   [13.9980, 121.2050],
-  /* Northeast — along Padre Garcia boundary */
+  /* Northeast — Lumbang/Talisay area */
   [13.9900, 121.2200],
   [13.9820, 121.2350],
+  /* East — San Francisco/San Celestino */
   [13.9720, 121.2430],
   [13.9620, 121.2480],
-  /* East */
   [13.9500, 121.2420],
-  [13.9380, 121.2300],
-  /* Southeast — San Celestino area */
-  [13.9200, 121.2200],
-  [13.9050, 121.2100],
-  /* South — along Rosario boundary */
+  [13.9380, 121.2400],
+  [13.9225, 121.2220],
+  [13.9021, 121.2383],
+  /* Southeast — Tipacan/San Celestino */
+  [13.9050, 121.2200],
   [13.8900, 121.1950],
+  /* South — Adya/Rizal/Calamias */
   [13.8780, 121.1750],
-  [13.8700, 121.1550],
-  [13.8680, 121.1350],
-  /* Southwest — along San Jose boundary */
-  [13.8750, 121.1150],
-  [13.8900, 121.1000],
-  [13.9050, 121.0900],
-  [13.9200, 121.0880],
-  /* West — along Mataasnakahoy boundary */
-  [13.9400, 121.0950],
+  [13.8696, 121.1332],
+  [13.8700, 121.1150],
+  /* Southwest — Duhatan/Pinagtongulan */
+  [13.8750, 121.1000],
+  [13.8900, 121.0900],
+  [13.9200, 121.0857],
+  [13.9270, 121.0873],
+  /* West — Pangao/Banaybanay */
+  [13.9350, 121.0950],
   [13.9550, 121.1000],
   [13.9700, 121.1050],
   [13.9850, 121.1150],
