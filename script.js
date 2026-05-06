@@ -794,6 +794,31 @@ document.getElementById('search').addEventListener('keyup', function (e) {
   var q = this.value.toLowerCase().trim();
   if (!q) return;
 
+  // ── Coordinate search: "13.9415, 121.1637" or "13.9415 121.1637" ──
+  var coordMatch = q.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
+  if (coordMatch) {
+    var lat = parseFloat(coordMatch[1]);
+    var lng = parseFloat(coordMatch[2]);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      map.flyTo([lat, lng], 17);
+      // Drop a temporary pin so you can see the exact spot
+      var tempIcon = L.divIcon({
+        className: '',
+        iconAnchor: [12, 24],
+        html: '<div style="font-size:1.6rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4))">📌</div>'
+      });
+      var tempMarker = L.marker([lat, lng], { icon: tempIcon })
+        .addTo(map)
+        .bindPopup('<b>📌 Searched Location</b><br><span style="font-size:0.75rem;color:#6b7280">' +
+          lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>')
+        .openPopup();
+      // Remove the pin after 8 seconds
+      setTimeout(function() { map.removeLayer(tempMarker); }, 8000);
+      showToast('📌 Flying to ' + lat.toFixed(4) + ', ' + lng.toFixed(4));
+      return;
+    }
+  }
+
   var found = false;
   var firstMatch = null;
 
