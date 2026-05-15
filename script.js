@@ -406,8 +406,18 @@ function getChoroplethColor(count) {
 }
 
 function buildChoropleth() {
-  if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
-  if (!choroGroup) { showToast('⚠️ Map not ready yet.'); return; }
+  if (!barangayGeoJSON) { 
+    showToast('⚠️ Barangay data not loaded yet.'); 
+    console.error('barangayGeoJSON is null');
+    return; 
+  }
+  if (!choroGroup) { 
+    showToast('⚠️ Map not ready yet.'); 
+    console.error('choroGroup is null');
+    return; 
+  }
+
+  console.log('Building choropleth with', allHeatPoints.length, 'points');
 
   // Clear previous choropleth
   choroGroup.clearLayers();
@@ -419,6 +429,8 @@ function buildChoropleth() {
     return { lng: pt[1], lat: pt[0] };
   });
 
+  console.log('Converted points:', points.length);
+
   // Count points per barangay
   var brgyCounts = {};
   barangayGeoJSON.features.forEach(function(feature) {
@@ -429,6 +441,8 @@ function buildChoropleth() {
       if (pointInPolygon([pt.lng, pt.lat], poly)) brgyCounts[name]++;
     });
   });
+
+  console.log('Barangay counts:', brgyCounts);
 
   // Add choropleth to the permanent group
   L.geoJSON(barangayGeoJSON, {
@@ -454,6 +468,8 @@ function buildChoropleth() {
     }
   }).addTo(choroGroup);
 
+  console.log('Choropleth added to map');
+
   // Add legend as plain HTML div — avoids Leaflet control removal errors
   var existingLegend = document.getElementById('choropleth-legend');
   if (existingLegend) existingLegend.remove();
@@ -470,6 +486,8 @@ function buildChoropleth() {
     '<div style="display:flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:transparent;border-radius:3px;display:inline-block;border:1px solid #d1d5db;"></span> No data</div>';
   document.body.appendChild(legendDiv);
   choroLegend = legendDiv;
+  
+  console.log('Legend added');
 }
 
 function toggleHeatmap(show) {
@@ -479,27 +497,36 @@ function toggleHeatmap(show) {
   console.log('lipaBoundaryData loaded:', !!lipaBoundaryData);
   if (show) {
     document.body.classList.add('choropleth-active');
+    // Hide all marker layers
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
+    // Hide user location if present
     if (userLocationMarker && map.hasLayer(userLocationMarker)) map.removeLayer(userLocationMarker);
     if (userLocationCircle && map.hasLayer(userLocationCircle))  map.removeLayer(userLocationCircle);
+    // Hide barangay border lines
     if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
+    // Hide city boundary
     boundaryGroup.clearLayers();
+    // Show choropleth
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
     // Clear choropleth contents (don't remove the group itself)
     if (choroGroup) choroGroup.clearLayers();
+    // Remove legend
     try { if (choroLegend) { choroLegend.remove(); } } catch(e) {}
     choroLegend = null;
+    // Restore all marker layers
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
+    // Restore barangay border lines
     if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) {
       try { brgyBorderLayer.addTo(map); } catch(e) { console.log('brgyBorderLayer restore error:', e); }
     }
-    if (lipaBoundaryData) {
+    // Restore city boundary if it was visible
+    if (boundaryVisible && lipaBoundaryData) {
       boundaryGroup.clearLayers();
       L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
         .bindTooltip('Lipa City, Batangas', { sticky: true })
