@@ -177,76 +177,54 @@ function toggleSatellite(on) {
    6. LIPA CITY BOUNDARY
 ═══════════════════════════════════════ */
 
-var lipaBoundary = L.polygon([
-  /* North — Summit Point / Inosloban area */
-  [14.0050, 121.1680],
-  [14.0020, 121.1750],
-  [13.9980, 121.1820],
-  [13.9950, 121.1900],
-  /* Northeast bulge — toward Santiago/Atisan */
-  [13.9920, 121.2000],
-  [13.9900, 121.2100],
-  [13.9880, 121.2200],
-  [13.9850, 121.2280],
-  [13.9800, 121.2350],
-  [13.9750, 121.2400],
-  [13.9700, 121.2430],
-  [13.9630, 121.2450],
-  [13.9560, 121.2420],
-  /* East side — St Ambrose / San Francisco area */
-  [13.9480, 121.2380],
-  [13.9400, 121.2330],
-  [13.9300, 121.2280],
-  [13.9200, 121.2250],
-  [13.9100, 121.2230],
-  [13.9021, 121.2383],
-  /* Southeast — toward Bawi/Pansol/San Antonio */
-  [13.8980, 121.2300],
-  [13.8950, 121.2200],
-  [13.8920, 121.2100],
-  [13.8900, 121.2000],
-  /* South — Padre Garcia border / Anilao area */
-  [13.8870, 121.1900],
-  [13.8850, 121.1800],
-  [13.8830, 121.1700],
-  [13.8820, 121.1600],
-  [13.8810, 121.1500],
-  /* Southwest — E2 highway / San Jose border */
-  [13.8820, 121.1400],
-  [13.8840, 121.1300],
-  [13.8870, 121.1200],
-  [13.8920, 121.1100],
-  /* West notch bottom — Pangao/Pinagtungulan */
-  [13.9000, 121.1050],
-  [13.9100, 121.1000],
-  [13.9200, 121.0980],
-  /* West notch indent — Mataasnakahoy cuts in */
-  [13.9280, 121.1050],
-  [13.9320, 121.1150],
-  [13.9280, 121.1250],
-  [13.9220, 121.1300],
-  [13.9180, 121.1380],
-  [13.9220, 121.1450],
-  [13.9300, 121.1480],
-  /* Back out of notch — Banaybanay area */
-  [13.9380, 121.1400],
-  [13.9420, 121.1300],
-  [13.9480, 121.1200],
-  /* Northwest — back up toward Inosloban */
-  [13.9550, 121.1150],
-  [13.9650, 121.1150],
-  [13.9750, 121.1200],
-  [13.9850, 121.1300],
-  [13.9950, 121.1450],
-  [14.0020, 121.1550]
-], {
-  color: '#15803d', weight: 2, dashArray: '8,6',
-  fillColor: '#22c55e', fillOpacity: 0.04
-}).addTo(map).bindTooltip('Lipa City, Batangas', { sticky: true });
+var lipaBoundary = null;
 
-map.on('layeradd', function () { lipaBoundary.bringToFront(); });
+// Load official boundary from GeoJSON file
+fetch('lipa-boundary.geojson')
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    lipaBoundary = L.geoJSON(data, {
+      style: {
+        color: '#15803d',
+        weight: 2,
+        dashArray: '8,6',
+        fillColor: '#22c55e',
+        fillOpacity: 0.04
+      }
+    }).addTo(map).bindTooltip('Lipa City, Batangas', { sticky: true });
+    lipaBoundary.bringToFront();
+  })
+  .catch(function() {
+    // Fallback polygon if file not found
+    lipaBoundary = L.polygon([
+      [14.0050, 121.1680],[14.0020, 121.1750],[13.9980, 121.1820],
+      [13.9950, 121.1900],[13.9920, 121.2000],[13.9900, 121.2100],
+      [13.9880, 121.2200],[13.9850, 121.2280],[13.9800, 121.2350],
+      [13.9750, 121.2400],[13.9700, 121.2430],[13.9630, 121.2450],
+      [13.9560, 121.2420],[13.9480, 121.2380],[13.9400, 121.2330],
+      [13.9300, 121.2280],[13.9200, 121.2250],[13.9100, 121.2230],
+      [13.9021, 121.2383],[13.8950, 121.2300],[13.8900, 121.2200],
+      [13.8850, 121.2100],[13.8820, 121.2000],[13.8800, 121.1900],
+      [13.8780, 121.1800],[13.8750, 121.1700],[13.8700, 121.1600],
+      [13.8696, 121.1450],[13.8700, 121.1300],[13.8720, 121.1200],
+      [13.8780, 121.1100],[13.8850, 121.1000],[13.8950, 121.0950],
+      [13.9050, 121.0900],[13.9150, 121.0870],[13.9270, 121.0857],
+      [13.9350, 121.0950],[13.9300, 121.1050],[13.9250, 121.1100],
+      [13.9200, 121.1150],[13.9150, 121.1200],[13.9100, 121.1300],
+      [13.9150, 121.1400],[13.9200, 121.1450],[13.9300, 121.1480],
+      [13.9380, 121.1400],[13.9420, 121.1300],[13.9480, 121.1200],
+      [13.9550, 121.1150],[13.9650, 121.1150],[13.9750, 121.1200],
+      [13.9850, 121.1300],[13.9950, 121.1450],[14.0020, 121.1550]
+    ], {
+      color: '#15803d', weight: 2, dashArray: '8,6',
+      fillColor: '#22c55e', fillOpacity: 0.04
+    }).addTo(map).bindTooltip('Lipa City, Batangas', { sticky: true });
+  });
+
+map.on('layeradd', function () { if (lipaBoundary) lipaBoundary.bringToFront(); });
 
 function toggleBoundary(show) {
+  if (!lipaBoundary) return;
   show ? map.addLayer(lipaBoundary) : map.removeLayer(lipaBoundary);
 }
 
