@@ -411,7 +411,8 @@ function buildChoropleth() {
 
   // Clear previous choropleth
   choroGroup.clearLayers();
-  if (choroLegend) { choroLegend.remove(); choroLegend = null; }
+  try { if (choroLegend) { choroLegend.remove(); } } catch(e) {}
+  choroLegend = null;
 
   // Use allHeatPoints [lat, lng, intensity]
   var points = allHeatPoints.map(function(pt) {
@@ -490,7 +491,8 @@ function toggleHeatmap(show) {
     document.body.classList.remove('choropleth-active');
     // Clear choropleth contents (don't remove the group itself)
     if (choroGroup) choroGroup.clearLayers();
-    if (choroLegend) { choroLegend.remove(); choroLegend = null; }
+    try { if (choroLegend) { choroLegend.remove(); } } catch(e) {}
+    choroLegend = null;
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
