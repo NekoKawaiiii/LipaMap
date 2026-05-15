@@ -363,8 +363,9 @@ fetch('lipa-barangays.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
     barangayGeoJSON = data;
-    // Draw subtle boundary lines (always visible)
-    brgyBorderLayer = L.geoJSON(data, {
+    // Draw subtle boundary lines using boundaryGroup pattern
+    brgyBorderLayer = L.layerGroup().addTo(map);
+    L.geoJSON(data, {
       style: {
         color:       '#15803d',
         weight:      0.8,
@@ -372,8 +373,7 @@ fetch('lipa-barangays.geojson')
         fillColor:   'transparent',
         fillOpacity: 0
       }
-    }).addTo(map);
-    brgyBorderLayer.bringToFront();
+    }).addTo(brgyBorderLayer);
   })
   .catch(function() { console.log('Barangay GeoJSON not found.'); });
 
@@ -496,7 +496,9 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
-    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) brgyBorderLayer.addTo(map);
+    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) {
+      try { brgyBorderLayer.addTo(map); } catch(e) { console.log('brgyBorderLayer restore error:', e); }
+    }
     if (lipaBoundaryData) {
       boundaryGroup.clearLayers();
       L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
