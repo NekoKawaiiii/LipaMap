@@ -265,13 +265,14 @@ function makeIcon(category) {
    10. CHOROPLETH HEATMAP BY BARANGAY
 ═══════════════════════════════════════ */
 
-var heatLayer        = null;   // kept for compatibility
+var heatLayer        = null;
 var heatPoints       = {};
 var allHeatPoints    = [];
+var choroGroup       = L.layerGroup(); // permanent container — use clearLayers()
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
-var brgyBorderLayer  = null;   // always-visible barangay boundary lines
+var brgyBorderLayer  = null;
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -401,9 +402,12 @@ function getChoroplethColor(count) {
 function buildChoropleth() {
   if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
 
-  // Always clear existing choropleth first to prevent stacking
-  if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
-  if (choroLegend) { choroLegend.remove();          choroLegend = null; }
+  // Clear previous choropleth from the container
+  choroGroup.clearLayers();
+  if (choroLegend) { choroLegend.remove(); choroLegend = null; }
+
+  // Add container to map if not already there
+  if (!map.hasLayer(choroGroup)) choroGroup.addTo(map);
 
   // Collect all marker coordinates
   var points = [];
@@ -425,7 +429,7 @@ function buildChoropleth() {
     });
   });
 
-  // Draw choropleth layer
+  // Draw choropleth layer into the group container
   choroLayer = L.geoJSON(barangayGeoJSON, {
     style: function(feature) {
       var name  = feature.properties.name || 'Unknown';
@@ -447,7 +451,7 @@ function buildChoropleth() {
         { sticky: true }
       );
     }
-  }).addTo(map);
+  }).addTo(choroGroup);
 
   // Add legend
   choroLegend = L.control({ position: 'bottomright' });
@@ -481,9 +485,11 @@ function toggleHeatmap(show) {
     if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
   } else {
     document.body.classList.remove('choropleth-active');
-    if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
-    if (choroLegend) { choroLegend.remove();          choroLegend = null; }
-    if (heatLayer)   { map.removeLayer(heatLayer);    heatLayer   = null; }
+    // Clear choropleth group
+    choroGroup.clearLayers();
+    if (map.hasLayer(choroGroup)) map.removeLayer(choroGroup);
+    if (choroLegend) { choroLegend.remove(); choroLegend = null; }
+    if (heatLayer)   { map.removeLayer(heatLayer); heatLayer = null; }
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
     });
