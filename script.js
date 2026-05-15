@@ -181,40 +181,34 @@ function toggleSatellite(on) {
    6. LIPA CITY BOUNDARY
 ═══════════════════════════════════════ */
 
-var lipaBoundary     = null;
 var lipaBoundaryData = null;
 var boundaryVisible  = true;
+var boundaryGroup    = L.layerGroup().addTo(map); // permanent container
 
 var BOUNDARY_STYLE = {
   color: '#15803d', weight: 2.5,
   dashArray: '8,6', fillColor: '#22c55e', fillOpacity: 0.04
 };
 
-function drawBoundary() {
-  if (!lipaBoundaryData) return;
-  if (lipaBoundary) { lipaBoundary.remove(); lipaBoundary = null; }
-  lipaBoundary = L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
-    .bindTooltip('Lipa City, Batangas', { sticky: true })
-    .addTo(map);
-  lipaBoundary.bringToFront();
-}
-
 fetch('lipa-boundary.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
     lipaBoundaryData = data;
-    if (boundaryVisible) drawBoundary();
+    if (boundaryVisible) {
+      L.geoJSON(data, { style: BOUNDARY_STYLE })
+        .bindTooltip('Lipa City, Batangas', { sticky: true })
+        .addTo(boundaryGroup);
+    }
   })
   .catch(function(e) { console.log('Could not load boundary:', e); });
 
-map.on('layeradd', function() { if (lipaBoundary && boundaryVisible) lipaBoundary.bringToFront(); });
-
 function toggleBoundary(show) {
   boundaryVisible = show;
-  if (show) {
-    drawBoundary();
-  } else {
-    if (lipaBoundary) { lipaBoundary.remove(); lipaBoundary = null; }
+  boundaryGroup.clearLayers();
+  if (show && lipaBoundaryData) {
+    L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
+      .bindTooltip('Lipa City, Batangas', { sticky: true })
+      .addTo(boundaryGroup);
   }
 }
 
@@ -477,8 +471,8 @@ function toggleHeatmap(show) {
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
-    // Hide subtle border layer — choropleth draws its own
-    if (brgyBorderLayer) map.removeLayer(brgyBorderLayer);
+    // Hide boundary while choropleth is active
+    if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
@@ -488,8 +482,8 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
     });
-    // Restore subtle border layer
-    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) map.addLayer(brgyBorderLayer);
+    // Restore boundary if it was visible
+    if (boundaryVisible && !map.hasLayer(boundaryGroup)) map.addLayer(boundaryGroup);
   }
 }
 
