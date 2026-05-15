@@ -477,18 +477,27 @@ function toggleHeatmap(show) {
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
-    if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
-    // Build using stored allHeatPoints — no need for markers to be visible
+    // Hide boundary by clearing its group
+    boundaryGroup.clearLayers();
+    // Build choropleth
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
+    // Clear choropleth
     choroGroup.clearLayers();
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
     if (heatLayer)   { map.removeLayer(heatLayer); heatLayer = null; }
+    // Restore markers
     Object.keys(layers).forEach(function(k) {
       layers[k].addTo(map);
     });
-    if (boundaryVisible && !map.hasLayer(boundaryGroup)) map.addLayer(boundaryGroup);
+    // Restore boundary by refilling its group
+    if (boundaryVisible && lipaBoundaryData) {
+      boundaryGroup.clearLayers();
+      L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
+        .bindTooltip('Lipa City, Batangas', { sticky: true })
+        .addTo(boundaryGroup);
+    }
   }
 }
 
