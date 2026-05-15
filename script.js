@@ -212,12 +212,12 @@ map.on('layeradd', function () { if (lipaBoundary && boundaryVisible) lipaBounda
 
 function toggleBoundary(show) {
   boundaryVisible = show;
-  if (!lipaBoundary) return; // will be applied when GeoJSON loads
+  if (!lipaBoundary) return;
   if (show) {
-    if (!map.hasLayer(lipaBoundary)) map.addLayer(lipaBoundary);
+    lipaBoundary.addTo(map);
     lipaBoundary.bringToFront();
   } else {
-    if (map.hasLayer(lipaBoundary)) map.removeLayer(lipaBoundary);
+    lipaBoundary.remove();
   }
 }
 
