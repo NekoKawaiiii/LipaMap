@@ -465,15 +465,16 @@ function buildChoropleth() {
 
 function toggleHeatmap(show) {
   if (show) {
+    // Build choropleth FIRST (while markers are still on map)
+    buildChoropleth();
+    // Then hide markers
     document.body.classList.add('choropleth-active');
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
-    // Hide boundary while choropleth is active
     if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
-    buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
     if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
@@ -482,7 +483,6 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
     });
-    // Restore boundary if it was visible
     if (boundaryVisible && !map.hasLayer(boundaryGroup)) map.addLayer(boundaryGroup);
   }
 }
