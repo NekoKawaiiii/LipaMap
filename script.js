@@ -454,22 +454,22 @@ function buildChoropleth() {
     }
   }).addTo(choroGroup);
 
-  // Add legend
-  choroLegend = L.control({ position: 'bottomright' });
-  choroLegend.onAdd = function() {
-    var div = L.DomUtil.create('div');
-    div.style.cssText = 'background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);padding:12px 16px;border-radius:12px;border:1px solid rgba(134,239,176,0.5);box-shadow:0 4px 16px rgba(20,83,45,0.15);font-family:Outfit,sans-serif;font-size:0.78rem;min-width:160px;';
-    div.innerHTML =
-      '<div style="font-weight:700;color:#14532d;margin-bottom:8px;font-size:0.82rem;">🌿 Green Infrastructure</div>' +
-      '<div style="font-weight:600;color:#6b7280;margin-bottom:6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Locations per Barangay</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#14532d;border-radius:3px;display:inline-block;"></span> 10+ locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#16a34a;border-radius:3px;display:inline-block;"></span> 6–9 locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#4ade80;border-radius:3px;display:inline-block;"></span> 3–5 locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#bbf7d2;border-radius:3px;display:inline-block;"></span> 1–2 locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:transparent;border-radius:3px;display:inline-block;border:1px solid #d1d5db;"></span> No data</div>';
-    return div;
-  };
-  choroLegend.addTo(map);
+  // Add legend as plain HTML div — avoids Leaflet control removal errors
+  var existingLegend = document.getElementById('choropleth-legend');
+  if (existingLegend) existingLegend.remove();
+  var legendDiv = document.createElement('div');
+  legendDiv.id = 'choropleth-legend';
+  legendDiv.style.cssText = 'position:fixed;bottom:80px;right:16px;z-index:1000;background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);padding:12px 16px;border-radius:12px;border:1px solid rgba(134,239,176,0.5);box-shadow:0 4px 16px rgba(20,83,45,0.15);font-family:Outfit,sans-serif;font-size:0.78rem;min-width:160px;';
+  legendDiv.innerHTML =
+    '<div style="font-weight:700;color:#14532d;margin-bottom:8px;font-size:0.82rem;">🌿 Green Infrastructure</div>' +
+    '<div style="font-weight:600;color:#6b7280;margin-bottom:6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Locations per Barangay</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#14532d;border-radius:3px;display:inline-block;"></span> 10+ locations</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#16a34a;border-radius:3px;display:inline-block;"></span> 6–9 locations</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#4ade80;border-radius:3px;display:inline-block;"></span> 3–5 locations</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#bbf7d2;border-radius:3px;display:inline-block;"></span> 1–2 locations</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:transparent;border-radius:3px;display:inline-block;border:1px solid #d1d5db;"></span> No data</div>';
+  document.body.appendChild(legendDiv);
+  choroLegend = legendDiv;
 }
 
 function toggleHeatmap(show) {
