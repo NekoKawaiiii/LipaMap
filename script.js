@@ -182,6 +182,7 @@ function toggleSatellite(on) {
 ═══════════════════════════════════════ */
 
 var lipaBoundary = null;
+var boundaryVisible = true; // track desired state
 
 // Load official boundary from GeoJSON file
 fetch('lipa-boundary.geojson')
@@ -195,18 +196,29 @@ fetch('lipa-boundary.geojson')
         fillColor: '#22c55e',
         fillOpacity: 0.04
       }
-    }).addTo(map).bindTooltip('Lipa City, Batangas', { sticky: true });
-    lipaBoundary.bringToFront();
+    }).bindTooltip('Lipa City, Batangas', { sticky: true });
+
+    // Only add to map if toggle is still checked
+    if (boundaryVisible) {
+      lipaBoundary.addTo(map);
+      lipaBoundary.bringToFront();
+    }
   })
   .catch(function(e) {
     console.log('Could not load boundary:', e);
   });
 
-map.on('layeradd', function () { if (lipaBoundary) lipaBoundary.bringToFront(); });
+map.on('layeradd', function () { if (lipaBoundary && boundaryVisible) lipaBoundary.bringToFront(); });
 
 function toggleBoundary(show) {
-  if (!lipaBoundary) return;
-  show ? map.addLayer(lipaBoundary) : map.removeLayer(lipaBoundary);
+  boundaryVisible = show;
+  if (!lipaBoundary) return; // will be applied when GeoJSON loads
+  if (show) {
+    if (!map.hasLayer(lipaBoundary)) map.addLayer(lipaBoundary);
+    lipaBoundary.bringToFront();
+  } else {
+    if (map.hasLayer(lipaBoundary)) map.removeLayer(lipaBoundary);
+  }
 }
 
 
