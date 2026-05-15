@@ -268,7 +268,7 @@ function makeIcon(category) {
 var heatLayer        = null;
 var heatPoints       = {};
 var allHeatPoints    = [];
-var choroGroup       = L.layerGroup(); // permanent container — use clearLayers()
+var choroGroup       = L.layerGroup().addTo(map); // permanent container on map
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
@@ -406,9 +406,6 @@ function buildChoropleth() {
   choroGroup.clearLayers();
   if (choroLegend) { choroLegend.remove(); choroLegend = null; }
 
-  // Add container to map if not already there
-  if (!map.hasLayer(choroGroup)) choroGroup.addTo(map);
-
   // Collect all marker coordinates
   var points = [];
   Object.values(layers).forEach(function(layer) {
@@ -485,9 +482,8 @@ function toggleHeatmap(show) {
     if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
   } else {
     document.body.classList.remove('choropleth-active');
-    // Clear choropleth group
+    // Just clear the group contents — keep group on map
     choroGroup.clearLayers();
-    if (map.hasLayer(choroGroup)) map.removeLayer(choroGroup);
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
     if (heatLayer)   { map.removeLayer(heatLayer); heatLayer = null; }
     Object.keys(layers).forEach(function(k) {
