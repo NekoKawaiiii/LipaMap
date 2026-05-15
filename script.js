@@ -482,8 +482,8 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
-    if (userLocationMarker) map.removeLayer(userLocationMarker);
-    if (userLocationCircle)  map.removeLayer(userLocationCircle);
+    if (userLocationMarker && map.hasLayer(userLocationMarker)) map.removeLayer(userLocationMarker);
+    if (userLocationCircle && map.hasLayer(userLocationCircle))  map.removeLayer(userLocationCircle);
     if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
     boundaryGroup.clearLayers();
     buildChoropleth();
