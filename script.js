@@ -4,6 +4,14 @@
    Categories · Database (Neon PostgreSQL)
    ═══════════════════════════════════════════════════════════ */
 
+// Override Leaflet's default blue teardrop icon globally
+// so it never shows even as a fallback
+L.Marker.prototype.options.icon = L.divIcon({
+  className: '',
+  iconAnchor: [11, 11],
+  html: '<div style="background:#6b7280;width:22px;height:22px;border-radius:50%;border:3px solid rgba(255,255,255,0.9);box-shadow:0 3px 10px rgba(0,0,0,0.25);"></div>'
+});
+
 
 /* ═══════════════════════════════════════
    1. ADMIN SYSTEM
@@ -389,16 +397,20 @@ function buildChoropleth() {
 
 function toggleHeatmap(show) {
   if (show) {
-    // Hide all markers so only the choropleth is visible
-    Object.values(layers).forEach(function(layer) { map.removeLayer(layer); });
+    // Hide all marker layers so only choropleth is visible
+    Object.keys(layers).forEach(function(k) {
+      if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
+    });
     buildChoropleth();
   } else {
     // Remove choropleth and legend
     if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
     if (choroLegend) { choroLegend.remove();          choroLegend = null; }
     if (heatLayer)   { map.removeLayer(heatLayer);    heatLayer   = null; }
-    // Restore all markers
-    Object.values(layers).forEach(function(layer) { map.addLayer(layer); });
+    // Restore all marker layers
+    Object.keys(layers).forEach(function(k) {
+      if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
+    });
   }
 }
 
