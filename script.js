@@ -401,6 +401,10 @@ function getChoroplethColor(count) {
 function buildChoropleth() {
   if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
 
+  // Always clear existing choropleth first to prevent stacking
+  if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
+  if (choroLegend) { choroLegend.remove();          choroLegend = null; }
+
   // Collect all marker coordinates
   var points = [];
   Object.values(layers).forEach(function(layer) {
