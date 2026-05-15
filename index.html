@@ -47,15 +47,11 @@
       <span class="app-subtitle">GIS Dashboard · Green Infrastructure &amp; Waste Management · Lipa City, Batangas</span>
     </div>
     <div class="topbar-right">
-      <button class="icon-btn" title="Search" onclick="focusSearch()">🔍</button>
       <button class="icon-btn" title="Find My Location" onclick="locateMe()">📍</button>
       <button class="icon-btn admin-only" id="addPlaceBtn" title="Add New Place" onclick="openAddPanel()">
         ➕
         <span class="admin-badge show"></span>
       </button>
-      <button class="icon-btn" title="Settings" onclick="openSettings()">⚙️</button>
-      <button class="icon-btn" title="Help" onclick="showAbout()">❓</button>
-      <button class="icon-btn hide-on-mobile" title="Contact" onclick="showContact()">✉️</button>
     </div>
   </header>
 
@@ -78,9 +74,9 @@
       <div class="nav-divider"></div>
 
       <div class="nav-section">
-        <div class="nav-item" onclick="locateMe()">
-          <span class="nav-icon">📍</span> Find My Location
-        </div>
+        <div class="nav-item" onclick="showAbout()">   <span class="nav-icon">📖</span> About the Area</div>
+        <div class="nav-item" onclick="showContact()"> <span class="nav-icon">✉️</span> Contact / Feedback</div>
+        <div class="nav-item" onclick="openSettings()"><span class="nav-icon">⚙️</span> Settings</div>
       </div>
     </nav>
 
@@ -437,7 +433,9 @@
   <div class="nav-label">Waste Management</div>
   <div id="mobile-waste"></div>
   <div class="nav-divider"></div>
-  <div class="nav-item" onclick="locateMe();closeMobileMenu()"><span class="nav-icon">📍</span> Find My Location</div>
+  <div class="nav-item" onclick="showAbout();closeMobileMenu()"><span class="nav-icon">📖</span> About the Area</div>
+  <div class="nav-item" onclick="showContact();closeMobileMenu()"><span class="nav-icon">✉️</span> Contact / Feedback</div>
+  <div class="nav-item" onclick="openSettings();closeMobileMenu()"><span class="nav-icon">⚙️</span> Settings</div>
 </nav>
 
 <!-- SCRIPTS -->
