@@ -268,12 +268,17 @@ function makeIcon(category) {
 var heatLayer        = null;
 var heatPoints       = {};
 var allHeatPoints    = [];
-var choroGroup       = null;  // created fresh each time
+var choroGroup       = null;
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
 var brgyBorderLayer  = null;
 var allMarkerCoords  = [];
+
+// Initialize choroGroup after map is ready
+setTimeout(function() {
+  choroGroup = L.layerGroup().addTo(map);
+}, 0);
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -402,9 +407,10 @@ function getChoroplethColor(count) {
 
 function buildChoropleth() {
   if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
+  if (!choroGroup) { showToast('⚠️ Map not ready yet.'); return; }
 
-  // Remove old choropleth if exists
-  if (choroGroup) { map.removeLayer(choroGroup); choroGroup = null; }
+  // Clear previous choropleth
+  choroGroup.clearLayers();
   if (choroLegend) { choroLegend.remove(); choroLegend = null; }
 
   // Use allHeatPoints [lat, lng, intensity]
@@ -423,9 +429,7 @@ function buildChoropleth() {
     });
   });
 
-  // Create fresh layer group and add to map on top
-  choroGroup = L.layerGroup().addTo(map);
-
+  // Add choropleth to the permanent group
   L.geoJSON(barangayGeoJSON, {
     style: function(feature) {
       var name  = feature.properties.name || 'Unknown';
@@ -484,7 +488,8 @@ function toggleHeatmap(show) {
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
-    if (choroGroup)  { map.removeLayer(choroGroup); choroGroup = null; }
+    // Clear choropleth contents (don't remove the group itself)
+    if (choroGroup) choroGroup.clearLayers();
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
