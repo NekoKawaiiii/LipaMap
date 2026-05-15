@@ -896,3 +896,9 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
     font-size: 0.58rem;
   }
 }
+
+/* Hide all map markers when choropleth is active */
+body.choropleth-active .leaflet-marker-icon,
+body.choropleth-active .leaflet-marker-shadow {
+  display: none !important;
+}
