@@ -278,30 +278,122 @@ function makeIcon(category) {
 
 
 /* ═══════════════════════════════════════
-   10. HEATMAP
+   10. CHOROPLETH HEATMAP BY BARANGAY
 ═══════════════════════════════════════ */
 
-var heatLayer = null;
-var heatPoints = {};
-Object.keys(layers).forEach(function (k) { heatPoints[k] = []; });
-var allHeatPoints = [];
+var heatLayer        = null;   // kept for compatibility
+var heatPoints       = {};
+var allHeatPoints    = [];
+var choroLayer       = null;
+var barangayGeoJSON  = null;
+var choroLegend      = null;
+
+// Load barangay boundaries on startup
+fetch('lipa-barangays.geojson')
+  .then(function(r) { return r.json(); })
+  .then(function(data) { barangayGeoJSON = data; })
+  .catch(function() { console.log('Barangay GeoJSON not found.'); });
+
+// Point-in-polygon (ray casting)
+function pointInPolygon(point, polygon) {
+  var x = point[0], y = point[1];
+  var inside = false;
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    var xi = polygon[i][0], yi = polygon[i][1];
+    var xj = polygon[j][0], yj = polygon[j][1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function getPolygonCoords(geometry) {
+  if (geometry.type === 'Polygon') return geometry.coordinates[0];
+  if (geometry.type === 'MultiPolygon') return geometry.coordinates[0][0];
+  return [];
+}
+
+function getChoroplethColor(count) {
+  if (count === 0)  return null;           // transparent
+  if (count <= 2)   return '#bbf7d2';      // light green
+  if (count <= 5)   return '#4ade80';      // medium green
+  if (count <= 9)   return '#16a34a';      // dark green
+  return '#14532d';                         // deep forest green 10+
+}
+
+function buildChoropleth() {
+  if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
+
+  // Collect all marker coordinates
+  var points = [];
+  Object.values(layers).forEach(function(layer) {
+    layer.eachLayer(function(marker) {
+      var ll = marker.getLatLng();
+      points.push({ lng: ll.lng, lat: ll.lat });
+    });
+  });
+
+  // Count points per barangay
+  var counts = {};
+  barangayGeoJSON.features.forEach(function(feature) {
+    var name = feature.properties.name || 'Unknown';
+    counts[name] = 0;
+    var poly = getPolygonCoords(feature.geometry);
+    points.forEach(function(pt) {
+      if (pointInPolygon([pt.lng, pt.lat], poly)) counts[name]++;
+    });
+  });
+
+  // Draw choropleth layer
+  choroLayer = L.geoJSON(barangayGeoJSON, {
+    style: function(feature) {
+      var name  = feature.properties.name || 'Unknown';
+      var count = counts[name] || 0;
+      var color = getChoroplethColor(count);
+      return {
+        color:       '#15803d',
+        weight:      1.2,
+        opacity:     0.8,
+        fillColor:   color || 'transparent',
+        fillOpacity: color ? 0.55 : 0
+      };
+    },
+    onEachFeature: function(feature, layer) {
+      var name  = feature.properties.name || 'Unknown';
+      var count = counts[name] || 0;
+      layer.bindTooltip(
+        '<b>' + name + '</b><br>' + count + ' green infrastructure location' + (count !== 1 ? 's' : ''),
+        { sticky: true }
+      );
+    }
+  }).addTo(map);
+
+  // Add legend
+  choroLegend = L.control({ position: 'bottomright' });
+  choroLegend.onAdd = function() {
+    var div = L.DomUtil.create('div');
+    div.style.cssText = 'background:rgba(255,255,255,0.92);backdrop-filter:blur(10px);padding:12px 16px;border-radius:12px;border:1px solid rgba(134,239,176,0.5);box-shadow:0 4px 16px rgba(20,83,45,0.15);font-family:Outfit,sans-serif;font-size:0.78rem;min-width:160px;';
+    div.innerHTML =
+      '<div style="font-weight:700;color:#14532d;margin-bottom:8px;font-size:0.82rem;">🌿 Green Infrastructure</div>' +
+      '<div style="font-weight:600;color:#6b7280;margin-bottom:6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Locations per Barangay</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#14532d;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 10+ locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#16a34a;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 6–9 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#4ade80;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 3–5 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#bbf7d2;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 1–2 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:transparent;border-radius:3px;display:inline-block;border:1px solid #d1d5db;"></span> No data</div>';
+    return div;
+  };
+  choroLegend.addTo(map);
+}
 
 function toggleHeatmap(show) {
   if (show) {
-    var pts = currentFilter ? heatPoints[currentFilter] : allHeatPoints;
-    if (!pts.length) pts = allHeatPoints;
-    heatLayer = L.heatLayer(pts, {
-      radius: 40, blur: 28, maxZoom: 16,
-      gradient: {
-        0.0:  '#f0fdf6',
-        0.25: '#bbf7d2',
-        0.5:  '#4ade80',
-        0.75: '#16a34a',
-        1.0:  '#14532d'
-      }
-    }).addTo(map);
+    buildChoropleth();
   } else {
-    if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+    if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
+    if (choroLegend) { choroLegend.remove();          choroLegend = null; }
+    if (heatLayer)   { map.removeLayer(heatLayer);    heatLayer   = null; }
   }
 }
 
