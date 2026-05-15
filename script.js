@@ -268,11 +268,12 @@ function makeIcon(category) {
 var heatLayer        = null;
 var heatPoints       = {};
 var allHeatPoints    = [];
-var choroGroup       = L.layerGroup().addTo(map); // permanent container on map
+var choroGroup       = L.layerGroup().addTo(map);
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
 var brgyBorderLayer  = null;
+var allMarkerCoords  = []; // store all marker coords independently
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -406,14 +407,13 @@ function buildChoropleth() {
   choroGroup.clearLayers();
   if (choroLegend) { choroLegend.remove(); choroLegend = null; }
 
-  // Collect all marker coordinates
-  var points = [];
-  Object.values(layers).forEach(function(layer) {
-    layer.eachLayer(function(marker) {
-      var ll = marker.getLatLng();
-      points.push({ lng: ll.lng, lat: ll.lat });
-    });
+  // Use allHeatPoints which stores coords independently of map visibility
+  // allHeatPoints format: [lat, lng, intensity]
+  var points = allHeatPoints.map(function(pt) {
+    return { lng: pt[1], lat: pt[0] };
   });
+
+  // Count points per barangay
 
   // Count points per barangay
   var counts = {};
@@ -470,24 +470,23 @@ function buildChoropleth() {
 
 function toggleHeatmap(show) {
   if (show) {
-    // Build choropleth FIRST (while markers are still on map)
-    buildChoropleth();
-    // Then hide markers
     document.body.classList.add('choropleth-active');
+    // Hide markers
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
     if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
+    // Build using stored allHeatPoints — no need for markers to be visible
+    buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
-    // Just clear the group contents — keep group on map
     choroGroup.clearLayers();
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
     if (heatLayer)   { map.removeLayer(heatLayer); heatLayer = null; }
     Object.keys(layers).forEach(function(k) {
-      if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
+      layers[k].addTo(map);
     });
     if (boundaryVisible && !map.hasLayer(boundaryGroup)) map.addLayer(boundaryGroup);
   }
