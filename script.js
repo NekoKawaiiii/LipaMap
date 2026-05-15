@@ -468,37 +468,34 @@ function buildChoropleth() {
 }
 
 function toggleHeatmap(show) {
+  console.log('toggleHeatmap called, show=', show);
+  console.log('barangayGeoJSON loaded:', !!barangayGeoJSON);
+  console.log('allHeatPoints count:', allHeatPoints.length);
+  console.log('lipaBoundaryData loaded:', !!lipaBoundaryData);
   if (show) {
     document.body.classList.add('choropleth-active');
-    // Hide all marker layers
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
-    // Hide barangay border lines
     if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
-    // Hide city boundary
     boundaryGroup.clearLayers();
-    // Build and show choropleth
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
-    // Remove choropleth
     if (choroGroup)  { map.removeLayer(choroGroup); choroGroup = null; }
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
-    // Restore marker layers
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
-    // Restore barangay border lines
     if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) brgyBorderLayer.addTo(map);
-    // Restore city boundary
     if (lipaBoundaryData) {
       boundaryGroup.clearLayers();
       L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
         .bindTooltip('Lipa City, Batangas', { sticky: true })
         .addTo(boundaryGroup);
+      console.log('Boundary restored');
     }
   }
 }
