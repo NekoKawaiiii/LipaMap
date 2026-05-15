@@ -181,43 +181,40 @@ function toggleSatellite(on) {
    6. LIPA CITY BOUNDARY
 ═══════════════════════════════════════ */
 
-var lipaBoundary = null;
-var boundaryVisible = true; // track desired state
+var lipaBoundary     = null;
+var lipaBoundaryData = null;
+var boundaryVisible  = true;
 
-// Load official boundary from GeoJSON file
+var BOUNDARY_STYLE = {
+  color: '#15803d', weight: 2.5,
+  dashArray: '8,6', fillColor: '#22c55e', fillOpacity: 0.04
+};
+
+function drawBoundary() {
+  if (!lipaBoundaryData) return;
+  if (lipaBoundary) { lipaBoundary.remove(); lipaBoundary = null; }
+  lipaBoundary = L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
+    .bindTooltip('Lipa City, Batangas', { sticky: true })
+    .addTo(map);
+  lipaBoundary.bringToFront();
+}
+
 fetch('lipa-boundary.geojson')
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    lipaBoundary = L.geoJSON(data, {
-      style: {
-        color: '#15803d',
-        weight: 2.5,
-        dashArray: '8,6',
-        fillColor: '#22c55e',
-        fillOpacity: 0.04
-      }
-    }).bindTooltip('Lipa City, Batangas', { sticky: true });
-
-    // Only add to map if toggle is still checked
-    if (boundaryVisible) {
-      lipaBoundary.addTo(map);
-      lipaBoundary.bringToFront();
-    }
+    lipaBoundaryData = data;
+    if (boundaryVisible) drawBoundary();
   })
-  .catch(function(e) {
-    console.log('Could not load boundary:', e);
-  });
+  .catch(function(e) { console.log('Could not load boundary:', e); });
 
-map.on('layeradd', function () { if (lipaBoundary && boundaryVisible) lipaBoundary.bringToFront(); });
+map.on('layeradd', function() { if (lipaBoundary && boundaryVisible) lipaBoundary.bringToFront(); });
 
 function toggleBoundary(show) {
   boundaryVisible = show;
-  if (!lipaBoundary) return;
   if (show) {
-    lipaBoundary.addTo(map);
-    lipaBoundary.bringToFront();
+    drawBoundary();
   } else {
-    lipaBoundary.remove();
+    if (lipaBoundary) { lipaBoundary.remove(); lipaBoundary = null; }
   }
 }
 
