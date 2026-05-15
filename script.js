@@ -355,8 +355,8 @@ function buildChoropleth() {
         color:       '#15803d',
         weight:      1.2,
         opacity:     0.8,
-        fillColor:   color || 'transparent',
-        fillOpacity: color ? 0.55 : 0
+        fillColor:   color || '#f9fafb',
+        fillOpacity: color ? 0.75 : 0.15
       };
     },
     onEachFeature: function(feature, layer) {
@@ -389,11 +389,16 @@ function buildChoropleth() {
 
 function toggleHeatmap(show) {
   if (show) {
+    // Hide all markers so only the choropleth is visible
+    Object.values(layers).forEach(function(layer) { map.removeLayer(layer); });
     buildChoropleth();
   } else {
+    // Remove choropleth and legend
     if (choroLayer)  { map.removeLayer(choroLayer);  choroLayer  = null; }
     if (choroLegend) { choroLegend.remove();          choroLegend = null; }
     if (heatLayer)   { map.removeLayer(heatLayer);    heatLayer   = null; }
+    // Restore all markers
+    Object.values(layers).forEach(function(layer) { map.addLayer(layer); });
   }
 }
 
