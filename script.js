@@ -291,11 +291,103 @@ var allHeatPoints    = [];
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
+var brgyBorderLayer  = null;   // always-visible barangay boundary lines
 
-// Load barangay boundaries on startup
+// ─── BARANGAY CENTROIDS (fly-to for all 72) ───
+var BRGY_CENTROIDS = {
+  'Adya':                [13.8780, 121.1340],
+  'Anilao':              [13.9420, 121.1580],
+  'Anilao-Labac':        [13.9380, 121.1620],
+  'Antipolo Del Norte':  [13.9310, 121.1680],
+  'Antipolo Del Sur':    [13.9250, 121.1700],
+  'Bagong Pook':         [13.9430, 121.1120],
+  'Balintawak':          [13.9650, 121.1580],
+  'Banaybanay':          [13.9320, 121.1150],
+  'Bangkuwit':           [13.9500, 121.1050],
+  'Bolbok':              [13.9240, 121.1490],
+  'Bugtong na Pulo':     [13.9980, 121.1720],
+  'Bulacnin':            [13.9830, 121.1430],
+  'Bulaklakan':          [13.9550, 121.1900],
+  'Calamias':            [13.8750, 121.1520],
+  'Cumba':               [13.9060, 121.1390],
+  'Dagatan':             [13.9700, 121.1350],
+  'Duhatan':             [13.9370, 121.0870],
+  'Halang':              [13.9550, 121.1280],
+  'Inosloban':           [13.9850, 121.1650],
+  'Kayumanggi':          [13.9600, 121.1750],
+  'Latag':               [13.9320, 121.1730],
+  'Lodlod':              [13.9290, 121.1440],
+  'Lumbang':             [13.9820, 121.2070],
+  'Mabini':              [13.8850, 121.1510],
+  'Malagonlong':         [13.9200, 121.1600],
+  'Malitlit':            [13.9150, 121.1650],
+  'Marauoy':             [13.9610, 121.1620],
+  'Mataas na Lupa':      [13.9450, 121.1490],
+  'Munting Pulo':        [13.9520, 121.1870],
+  'Pagolingin Bata':     [13.9100, 121.1580],
+  'Pagolingin East':     [13.9130, 121.1620],
+  'Pagolingin West':     [13.9100, 121.1550],
+  'Pangao':              [13.9170, 121.1200],
+  'Pinagkawitan':        [13.9200, 121.1750],
+  'Pinagtongulan':       [13.9280, 121.0980],
+  'Plaridel':            [13.9350, 121.1580],
+  'Poblacion Barangay 1':[13.9430, 121.1620],
+  'Poblacion Barangay 2':[13.9420, 121.1630],
+  'Poblacion Barangay 3':[13.9410, 121.1640],
+  'Poblacion Barangay 4':[13.9400, 121.1650],
+  'Poblacion Barangay 5':[13.9390, 121.1660],
+  'Poblacion Barangay 6':[13.9380, 121.1670],
+  'Poblacion Barangay 7':[13.9370, 121.1680],
+  'Poblacion Barangay 8':[13.9360, 121.1690],
+  'Poblacion Barangay 9':[13.9350, 121.1700],
+  'Poblacion Barangay 9-A':[13.9345, 121.1705],
+  'Poblacion Barangay 10':[13.9340, 121.1710],
+  'Poblacion Barangay 11':[13.9330, 121.1720],
+  'Pusil':               [13.9730, 121.1540],
+  'Quezon':              [13.8960, 121.1360],
+  'Rizal':               [13.8720, 121.1600],
+  'Sabang':              [13.9480, 121.1680],
+  'Sampaguita':          [13.9040, 121.1460],
+  'San Benito':          [13.9300, 121.1950],
+  'San Carlos':          [13.9550, 121.1450],
+  'San Celestino':       [13.9220, 121.2220],
+  'San Francisco':       [13.9020, 121.2380],
+  'San Guillermo':       [13.8940, 121.1550],
+  'San Jose':            [13.9300, 121.1890],
+  'San Lucas':           [13.9650, 121.1480],
+  'San Salvador':        [13.9620, 121.1330],
+  'San Sebastian':       [13.9500, 121.1350],
+  'Santiago':            [13.9750, 121.1480],
+  'Santo Niño':          [13.9520, 121.2120],
+  'Santo Toribio':       [13.9180, 121.1900],
+  'Sapac':               [13.9800, 121.1550],
+  'Sico':                [13.9100, 121.1800],
+  'Talisay':             [13.9680, 121.2040],
+  'Tambo':               [13.9520, 121.1380],
+  'Tangob':              [13.9460, 121.1910],
+  'Tanguay':             [13.9680, 121.1400],
+  'Tibig':               [13.9560, 121.1470],
+  'Tipacan':             [13.9190, 121.1990],
+  'Unson':               [13.9650, 121.1250]
+};
+
+// Load barangay boundaries on startup — show as subtle lines always
 fetch('lipa-barangays.geojson')
   .then(function(r) { return r.json(); })
-  .then(function(data) { barangayGeoJSON = data; })
+  .then(function(data) {
+    barangayGeoJSON = data;
+    // Draw subtle boundary lines (always visible)
+    brgyBorderLayer = L.geoJSON(data, {
+      style: {
+        color:       '#15803d',
+        weight:      0.8,
+        opacity:     0.4,
+        fillColor:   'transparent',
+        fillOpacity: 0
+      }
+    }).addTo(map);
+    brgyBorderLayer.bringToFront();
+  })
   .catch(function() { console.log('Barangay GeoJSON not found.'); });
 
 // Point-in-polygon (ray casting)
@@ -394,12 +486,13 @@ function buildChoropleth() {
 function toggleHeatmap(show) {
   if (show) {
     document.body.classList.add('choropleth-active');
-    // Hide all marker layers
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
+    // Hide subtle border layer — choropleth draws its own
+    if (brgyBorderLayer) map.removeLayer(brgyBorderLayer);
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
@@ -409,6 +502,8 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) map.addLayer(layers[k]);
     });
+    // Restore subtle border layer
+    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) map.addLayer(brgyBorderLayer);
   }
 }
 
@@ -480,6 +575,18 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
 function openAddPanel() {
   if (!isAdmin) { openLogin(); return; }
   document.getElementById('addPanel').classList.add('open');
+}
+
+function flyToBarangay(address) {
+  if (!address) return;
+  // Extract barangay name from address like "Brgy. Sabang, Lipa City, Batangas"
+  var match = address.match(/Brgy\.\s+(.+?),/);
+  if (!match) return;
+  var name = match[1].trim();
+  var coords = BRGY_CENTROIDS[name];
+  if (coords) {
+    map.flyTo(coords, 15);
+  }
 }
 
 function fillMyLocation() {
