@@ -268,12 +268,12 @@ function makeIcon(category) {
 var heatLayer        = null;
 var heatPoints       = {};
 var allHeatPoints    = [];
-var choroGroup       = L.layerGroup().addTo(map);
+var choroGroup       = null;  // created fresh each time
 var choroLayer       = null;
 var barangayGeoJSON  = null;
 var choroLegend      = null;
 var brgyBorderLayer  = null;
-var allMarkerCoords  = []; // store all marker coords independently
+var allMarkerCoords  = [];
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -403,34 +403,33 @@ function getChoroplethColor(count) {
 function buildChoropleth() {
   if (!barangayGeoJSON) { showToast('⚠️ Barangay data not loaded yet.'); return; }
 
-  // Clear previous choropleth from the container
-  choroGroup.clearLayers();
+  // Remove old choropleth if exists
+  if (choroGroup) { map.removeLayer(choroGroup); choroGroup = null; }
   if (choroLegend) { choroLegend.remove(); choroLegend = null; }
 
-  // Use allHeatPoints which stores coords independently of map visibility
-  // allHeatPoints format: [lat, lng, intensity]
+  // Use allHeatPoints [lat, lng, intensity]
   var points = allHeatPoints.map(function(pt) {
     return { lng: pt[1], lat: pt[0] };
   });
 
   // Count points per barangay
-
-  // Count points per barangay
-  var counts = {};
+  var brgyCounts = {};
   barangayGeoJSON.features.forEach(function(feature) {
     var name = feature.properties.name || 'Unknown';
-    counts[name] = 0;
+    brgyCounts[name] = 0;
     var poly = getPolygonCoords(feature.geometry);
     points.forEach(function(pt) {
-      if (pointInPolygon([pt.lng, pt.lat], poly)) counts[name]++;
+      if (pointInPolygon([pt.lng, pt.lat], poly)) brgyCounts[name]++;
     });
   });
 
-  // Draw choropleth layer into the group container
-  choroLayer = L.geoJSON(barangayGeoJSON, {
+  // Create fresh layer group and add to map on top
+  choroGroup = L.layerGroup().addTo(map);
+
+  L.geoJSON(barangayGeoJSON, {
     style: function(feature) {
       var name  = feature.properties.name || 'Unknown';
-      var count = counts[name] || 0;
+      var count = brgyCounts[name] || 0;
       var color = getChoroplethColor(count);
       return {
         color:       '#15803d',
@@ -442,7 +441,7 @@ function buildChoropleth() {
     },
     onEachFeature: function(feature, layer) {
       var name  = feature.properties.name || 'Unknown';
-      var count = counts[name] || 0;
+      var count = brgyCounts[name] || 0;
       layer.bindTooltip(
         '<b>' + name + '</b><br>' + count + ' green infrastructure location' + (count !== 1 ? 's' : ''),
         { sticky: true }
@@ -458,10 +457,10 @@ function buildChoropleth() {
     div.innerHTML =
       '<div style="font-weight:700;color:#14532d;margin-bottom:8px;font-size:0.82rem;">🌿 Green Infrastructure</div>' +
       '<div style="font-weight:600;color:#6b7280;margin-bottom:6px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;">Locations per Barangay</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#14532d;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 10+ locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#16a34a;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 6–9 locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#4ade80;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 3–5 locations</div>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#bbf7d2;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,0.1);"></span> 1–2 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#14532d;border-radius:3px;display:inline-block;"></span> 10+ locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#16a34a;border-radius:3px;display:inline-block;"></span> 6–9 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#4ade80;border-radius:3px;display:inline-block;"></span> 3–5 locations</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;"><span style="width:18px;height:18px;background:#bbf7d2;border-radius:3px;display:inline-block;"></span> 1–2 locations</div>' +
       '<div style="display:flex;align-items:center;gap:8px;"><span style="width:18px;height:18px;background:transparent;border-radius:3px;display:inline-block;border:1px solid #d1d5db;"></span> No data</div>';
     return div;
   };
@@ -471,28 +470,31 @@ function buildChoropleth() {
 function toggleHeatmap(show) {
   if (show) {
     document.body.classList.add('choropleth-active');
-    // Hide markers
+    // Hide all marker layers
     Object.keys(layers).forEach(function(k) {
       if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
     });
     if (userLocationMarker) map.removeLayer(userLocationMarker);
     if (userLocationCircle)  map.removeLayer(userLocationCircle);
-    // Hide boundary by clearing its group
+    // Hide barangay border lines
+    if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
+    // Hide city boundary
     boundaryGroup.clearLayers();
-    // Build choropleth
+    // Build and show choropleth
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
-    // Clear choropleth
-    choroGroup.clearLayers();
+    // Remove choropleth
+    if (choroGroup)  { map.removeLayer(choroGroup); choroGroup = null; }
     if (choroLegend) { choroLegend.remove(); choroLegend = null; }
-    if (heatLayer)   { map.removeLayer(heatLayer); heatLayer = null; }
-    // Restore markers
+    // Restore marker layers
     Object.keys(layers).forEach(function(k) {
-      layers[k].addTo(map);
+      if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
-    // Restore boundary by refilling its group
-    if (boundaryVisible && lipaBoundaryData) {
+    // Restore barangay border lines
+    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) brgyBorderLayer.addTo(map);
+    // Restore city boundary
+    if (lipaBoundaryData) {
       boundaryGroup.clearLayers();
       L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
         .bindTooltip('Lipa City, Batangas', { sticky: true })
