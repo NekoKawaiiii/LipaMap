@@ -275,11 +275,11 @@ var choroLegend      = null;
 var brgyBorderLayer  = null;
 var allMarkerCoords  = [];
 var heatmapActive    = false;
+var userLocationMarker = null;
+var userLocationCircle = null;
 
 // Initialize choroGroup after map is ready
-setTimeout(function() {
-  choroGroup = L.layerGroup().addTo(map);
-}, 0);
+choroGroup = L.layerGroup().addTo(map);
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -1184,8 +1184,6 @@ function exportToCSV() {
    LOCATE ME — Show user's current position
 ═══════════════════════════════════════ */
 
-var userLocationMarker  = null;
-var userLocationCircle  = null;
 var userHeadingCone     = null;
 var currentHeading      = null;
 var userLat             = null;
