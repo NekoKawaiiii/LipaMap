@@ -489,9 +489,6 @@ function buildChoropleth() {
 function toggleHeatmap(show) {
   heatmapActive = show;
   console.log('toggleHeatmap called, show=', show);
-  console.log('barangayGeoJSON loaded:', !!barangayGeoJSON);
-  console.log('allHeatPoints count:', allHeatPoints.length);
-  console.log('lipaBoundaryData loaded:', !!lipaBoundaryData);
   if (show) {
     document.body.classList.add('choropleth-active');
     // Hide all marker layers
@@ -505,17 +502,21 @@ function toggleHeatmap(show) {
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
-    // Clear choropleth contents (don't remove the group itself)
+    // Clear choropleth
     if (choroGroup) choroGroup.clearLayers();
-    // Remove legend
     try { if (choroLegend) { choroLegend.remove(); } } catch(e) {}
     choroLegend = null;
-    // Restore all marker layers
+    // Restore ALL marker layers unconditionally
     Object.keys(layers).forEach(function(k) {
-      if (!map.hasLayer(layers[k])) layers[k].addTo(map);
+      map.addLayer(layers[k]);
     });
-    if (userLocationMarker && !map.hasLayer(userLocationMarker)) map.addLayer(userLocationMarker);
-    if (userLocationCircle && !map.hasLayer(userLocationCircle))  map.addLayer(userLocationCircle);
+    // Restore user location
+    if (userLocationMarker) map.addLayer(userLocationMarker);
+    if (userLocationCircle)  map.addLayer(userLocationCircle);
+    // Re-activate all chips visually
+    document.querySelectorAll('.chip').forEach(function(c) {
+      c.classList.add('active');
+    });
   }
 }
 
