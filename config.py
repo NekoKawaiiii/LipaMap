@@ -9,18 +9,19 @@ import cloudinary
 import cloudinary.uploader
 
 # ─── DATABASE ───
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://neondb_owner:npg_x4YH6SOkKnoG@ep-purple-credit-a11kchlw-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-)
+# Always use the environment variable, no fallback with old credentials
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if not DATABASE_URL:
+    raise ValueError('DATABASE_URL environment variable is not set. Check your .env file.')
 
 def get_db():
     """Open and return a new database connection."""
     return psycopg2.connect(DATABASE_URL)
 
 # ─── CLOUDINARY ───
+# Always use environment variables, no hardcoded fallbacks
 cloudinary.config(
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'decldyhjb'),
-    api_key    = os.environ.get('CLOUDINARY_API_KEY',    '226428839186441'),
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET', 'hTbuZ0m87tnLepyLgoMI0OIfjHc')
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key    = os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
 )
