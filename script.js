@@ -514,6 +514,8 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
+    if (userLocationMarker && !map.hasLayer(userLocationMarker)) map.addLayer(userLocationMarker);
+    if (userLocationCircle && !map.hasLayer(userLocationCircle))  map.addLayer(userLocationCircle);
   }
 }
 
