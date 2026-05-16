@@ -12,6 +12,10 @@
 
 import os
 from flask import Flask, send_from_directory
+from dotenv import load_dotenv
+
+# ─── LOAD ENVIRONMENT VARIABLES ───
+load_dotenv()
 
 # ─── CONFIG (DB + Cloudinary) ───
 import config  # noqa: F401 — runs cloudinary.config() on import
