@@ -263,11 +263,14 @@ var choroLegend      = null;
 var brgyBorderLayer  = null;
 var allMarkerCoords  = [];
 var heatmapActive    = false;
+var pendingChoroBuild = false;
 var userLocationMarker = null;
 var userLocationCircle = null;
 
 // Initialize choroGroup after map is ready
 choroGroup = L.layerGroup().addTo(map);
+map.createPane('choroPane');
+map.getPane('choroPane').style.zIndex = 350;
 
 // ─── BARANGAY CENTROIDS (fly-to for all 72) ───
 var BRGY_CENTROIDS = {
@@ -363,6 +366,10 @@ fetch('lipa-barangays.geojson')
         fillOpacity: 0
       }
     }).addTo(brgyBorderLayer);
+    if (pendingChoroBuild && heatmapActive) {
+      pendingChoroBuild = false;
+      buildChoropleth();
+    }
   })
   .catch(function() { console.log('Barangay GeoJSON not found.'); });
 
@@ -395,10 +402,9 @@ function getChoroplethColor(count) {
 }
 
 function buildChoropleth() {
-  if (!barangayGeoJSON) { 
-    showToast('⚠️ Barangay data not loaded yet.'); 
-    console.error('barangayGeoJSON is null');
-    return; 
+  if (!barangayGeoJSON) {
+    pendingChoroBuild = true;
+    return;
   }
   if (!choroGroup) { 
     showToast('⚠️ Map not ready yet.'); 
@@ -435,6 +441,7 @@ function buildChoropleth() {
 
   // Add choropleth to the permanent group
   L.geoJSON(barangayGeoJSON, {
+    pane: 'choroPane',
     style: function(feature) {
       var name  = feature.properties.name || 'Unknown';
       var count = brgyCounts[name] || 0;
@@ -494,10 +501,6 @@ function toggleHeatmap(show) {
     // Hide user location if present
     if (userLocationMarker && map.hasLayer(userLocationMarker)) map.removeLayer(userLocationMarker);
     if (userLocationCircle && map.hasLayer(userLocationCircle))  map.removeLayer(userLocationCircle);
-    // Hide barangay border lines
-    if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
-    // Hide city boundary
-    boundaryGroup.clearLayers();
     // Show choropleth
     buildChoropleth();
   } else {
@@ -511,18 +514,6 @@ function toggleHeatmap(show) {
     Object.keys(layers).forEach(function(k) {
       if (!map.hasLayer(layers[k])) layers[k].addTo(map);
     });
-    // Restore barangay border lines
-    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) {
-      try { brgyBorderLayer.addTo(map); } catch(e) { console.log('brgyBorderLayer restore error:', e); }
-    }
-    // Restore city boundary if it was visible
-    if (boundaryVisible && lipaBoundaryData) {
-      boundaryGroup.clearLayers();
-      L.geoJSON(lipaBoundaryData, { style: BOUNDARY_STYLE })
-        .bindTooltip('Lipa City, Batangas', { sticky: true })
-        .addTo(boundaryGroup);
-      console.log('Boundary restored');
-    }
   }
 }
 
@@ -579,7 +570,7 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
   var el = document.getElementById(category + 'Count');
   if (el) el.textContent = counts[category];
 
-  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { buildChoropleth(); }
 }
 
 
@@ -978,7 +969,7 @@ function soloLayer(category) {
     chip.classList.toggle('active', chip.getAttribute('data-cat') === category);
   });
 
-  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { buildChoropleth(); }
 }
 
 function chipFilter(category) {
@@ -995,7 +986,7 @@ function showAll() {
   Object.values(layers).forEach(function (l) { map.addLayer(l); });
   document.querySelectorAll('.chip').forEach(function (c) { c.classList.add('active'); });
   map.flyTo(LIPA_CENTER, 13);
-  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { buildChoropleth(); }
 }
 
 
