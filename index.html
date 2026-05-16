@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -25,9 +24,7 @@
       <span class="lock-icon">🔒</span>
       <input type="password" id="adminPassword" placeholder="Enter password..." />
     </div>
-    <div class="g-recaptcha" data-sitekey="6LeAAO0sAAAAAJAg0dBoxlhtoIYYbpyLaPdFn2Ef" style="margin:12px 0;transform:scale(0.88);transform-origin:0 0;"></div>
     <div class="modal-error" id="loginError">Incorrect password. Please try again.</div>
-    <div class="modal-error" id="captchaError" style="display:none">Please complete the CAPTCHA.</div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeLogin()">Cancel</button>
       <button class="btn-login" onclick="attemptLogin()">Unlock</button>

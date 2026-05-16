@@ -20,8 +20,6 @@ function openLogin() {
   document.getElementById('loginModal').classList.add('open');
   document.getElementById('adminPassword').value = '';
   document.getElementById('loginError').classList.remove('show');
-  document.getElementById('captchaError').style.display = 'none';
-  if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
   setTimeout(function () { document.getElementById('adminPassword').focus(); }, 100);
 }
 
@@ -32,19 +30,11 @@ function closeLogin() {
 function attemptLogin() {
   var pw = document.getElementById('adminPassword').value;
 
-  // Check CAPTCHA first
-  var captchaToken = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
-  if (!captchaToken) {
-    document.getElementById('captchaError').style.display = 'block';
-    return;
-  }
-  document.getElementById('captchaError').style.display = 'none';
-
-  // Verify CAPTCHA + password on the backend
-  fetch('/api/verify-captcha', {
+  // Verify password on the backend
+  fetch('/api/verify-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: captchaToken, password: pw })
+    body: JSON.stringify({ password: pw })
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
@@ -56,12 +46,10 @@ function attemptLogin() {
       document.getElementById('loginError').classList.add('show');
       document.getElementById('adminPassword').value = '';
       document.getElementById('adminPassword').focus();
-      if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
     }
   })
   .catch(function() {
     showToast('❌ Login error. Please try again.');
-    if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
   });
 }
 
