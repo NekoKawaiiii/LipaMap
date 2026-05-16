@@ -569,7 +569,7 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
   var popup =
     '<div style="min-width:150px;font-family:Outfit,sans-serif">' +
       '<b style="font-size:0.88rem;color:#14532d">' + name + '</b><br>' +
-      '<img src="' + imgSrc + '" style="width:150px;height:85px;object-fit:cover;border-radius:8px;margin:6px 0;display:block" onerror="this.style.display=\'none\'">' +
+      '<img src="' + imgSrc + '" style="width:150px;height:85px;object-fit:cover;border-radius:8px;margin:6px 0;display:none" onload="this.style.display=\'block\'" onerror="this.style.display=\'none\'">' +
       '<span style="font-size:0.72rem;color:#9ca3af">Click marker for full details →</span>' +
     '</div>';
 
