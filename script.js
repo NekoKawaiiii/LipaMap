@@ -274,6 +274,7 @@ var barangayGeoJSON  = null;
 var choroLegend      = null;
 var brgyBorderLayer  = null;
 var allMarkerCoords  = [];
+var heatmapActive    = false;
 
 // Initialize choroGroup after map is ready
 setTimeout(function() {
@@ -491,6 +492,7 @@ function buildChoropleth() {
 }
 
 function toggleHeatmap(show) {
+  heatmapActive = show;
   console.log('toggleHeatmap called, show=', show);
   console.log('barangayGeoJSON loaded:', !!barangayGeoJSON);
   console.log('allHeatPoints count:', allHeatPoints.length);
@@ -589,7 +591,7 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
   var el = document.getElementById(category + 'Count');
   if (el) el.textContent = counts[category];
 
-  if (heatLayer) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
 }
 
 
@@ -988,8 +990,7 @@ function soloLayer(category) {
     chip.classList.toggle('active', chip.getAttribute('data-cat') === category);
   });
 
-  lipaBoundary.bringToFront();
-  if (heatLayer) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
 }
 
 function chipFilter(category) {
@@ -1005,9 +1006,8 @@ function showAll() {
   document.querySelectorAll('.nav-item').forEach(function (el) { el.classList.remove('active'); });
   Object.values(layers).forEach(function (l) { map.addLayer(l); });
   document.querySelectorAll('.chip').forEach(function (c) { c.classList.add('active'); });
-  lipaBoundary.bringToFront();
   map.flyTo(LIPA_CENTER, 13);
-  if (heatLayer) { toggleHeatmap(false); toggleHeatmap(true); }
+  if (heatmapActive) { toggleHeatmap(false); toggleHeatmap(true); }
 }
 
 
@@ -1333,7 +1333,6 @@ function showContact() {
 /* ═══════════════════════════════════════
    20. FINALIZE
 ═══════════════════════════════════════ */
-setTimeout(function () { lipaBoundary.bringToFront(); }, 500);
 
 
 /* ═══════════════════════════════════════
