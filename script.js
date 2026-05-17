@@ -442,6 +442,19 @@ function buildChoropleth() {
   // Add choropleth to the permanent group
   L.geoJSON(barangayGeoJSON, {
     pane: 'choroPane',
+    filter: function(feature) {
+      // Only render polygon barangay boundaries; skip stray Point features
+      // that would otherwise spawn default markers and trigger the
+      // "iconUrl not set in Icon options" error from Leaflet's Icon.js.
+      return feature.geometry &&
+        (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon');
+    },
+    pointToLayer: function(feature, latlng) {
+      // Defensive: if any Point sneaks past the filter, render an invisible
+      // circleMarker instead of a default Icon-based marker so iconUrl is
+      // never required.
+      return L.circleMarker(latlng, { radius: 0, opacity: 0, fillOpacity: 0 });
+    },
     style: function(feature) {
       var name  = feature.properties.name || 'Unknown';
       var count = brgyCounts[name] || 0;
