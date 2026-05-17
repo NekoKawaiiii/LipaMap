@@ -499,6 +499,7 @@ function toggleHeatmap(show) {
     if (userLocationMarker && map.hasLayer(userLocationMarker)) map.removeLayer(userLocationMarker);
     if (userLocationCircle && map.hasLayer(userLocationCircle))  map.removeLayer(userLocationCircle);
     // Show choropleth
+    choroGroup.clearLayers();
     buildChoropleth();
   } else {
     document.body.classList.remove('choropleth-active');
