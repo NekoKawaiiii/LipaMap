@@ -73,7 +73,7 @@ Organized into numbered sections (comments mark each):
 7. Layer groups (one `L.layerGroup` per category)
 8. Counters
 9. Icons & colors (`COLORS`, `LABELS`, `makeIcon()`)
-10. **CHOROPLETH HEATMAP BY BARANGAY** — uses dedicated `choroPane` (z-index 350) for proper layering beneath markers and city boundary; includes `pendingChoroBuild` flag to queue builds if `lipa-barangays.geojson` hasn't loaded yet; `toggleHeatmap()` must never touch the city boundary or barangay outline layers
+10. **CHOROPLETH HEATMAP BY BARANGAY** — uses dedicated `choroPane` (z-index 350) for proper layering beneath markers and city boundary; includes `pendingChoroBuild` flag to queue builds if `lipa-barangays.geojson` hasn't loaded yet; `toggleHeatmap()` must never touch the city boundary or barangay outline layers; `buildChoropleth()` must filter geoJSON to Polygon/MultiPolygon features only via `filter` and use `pointToLayer` to return invisible circle markers for any stray Points (the source geoJSON contains 57 Point features alongside 30 polygon barangay boundaries, and Leaflet's default Point handling triggers an `iconUrl not set in Icon options` crash that breaks the toggle)
 11. `addMarker()` — core function to place a marker on the map
 12. Seeded location data (hardcoded `addMarker()` calls)
 13. Add Place panel
