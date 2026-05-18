@@ -167,15 +167,19 @@
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
+  var pending = false;
+
   function setError(msg) {
     document.getElementById('loginError').textContent = msg || '';
   }
 
   function submitLogin() {
+    if (pending) return;
+
     var usernameEl = document.getElementById('adminUsername');
     var passwordEl = document.getElementById('adminPassword');
     var username   = (usernameEl.value || '').trim();
-    var password   = (passwordEl.value || '').trim();
+    var password   = passwordEl.value || '';
     var token      = '';
     if (typeof grecaptcha !== 'undefined' && grecaptcha && typeof grecaptcha.getResponse === 'function') {
       token = grecaptcha.getResponse();
@@ -187,6 +191,7 @@
     }
 
     setError('');
+    pending = true;
 
     fetch('/api/verify-login', {
       method: 'POST',
@@ -210,28 +215,16 @@
       }
       passwordEl.value = '';
       usernameEl.focus();
+      pending = false;
     })
     .catch(function () {
       setError('Network error. Please try again.');
       if (typeof grecaptcha !== 'undefined' && grecaptcha && typeof grecaptcha.reset === 'function') {
         grecaptcha.reset();
       }
+      pending = false;
     });
   }
-
-  document.getElementById('loginBtn').addEventListener('click', function (e) {
-    e.preventDefault();
-    submitLogin();
-  });
-
-  function onEnter(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      submitLogin();
-    }
-  }
-  document.getElementById('adminUsername').addEventListener('keyup', onEnter);
-  document.getElementById('adminPassword').addEventListener('keyup', onEnter);
 </script>
 
 </body>
