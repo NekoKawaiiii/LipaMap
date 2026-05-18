@@ -14,24 +14,6 @@
 <!-- ══════════════ TOAST ══════════════ -->
 <div class="success-toast" id="toast"></div>
 
-<!-- ══════════════ LOGIN MODAL ══════════════ -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal-box">
-    <div class="modal-logo">🌿</div>
-    <h2>Admin Access</h2>
-    <p>Enter the admin password to unlock editing and location management tools.</p>
-    <div class="modal-input-wrap">
-      <span class="lock-icon">🔒</span>
-      <input type="password" id="adminPassword" placeholder="Enter password..." />
-    </div>
-    <div class="modal-error" id="loginError">Incorrect password. Please try again.</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeLogin()">Cancel</button>
-      <button class="btn-login" onclick="attemptLogin()">Unlock</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══════════════ APP SHELL ══════════════ -->
 <div class="app-shell">
 
@@ -414,7 +396,7 @@
   </div>
   <div class="settings-footer">
     <span id="adminStatusLabel">👁️ Viewer Mode</span>
-    <button id="adminToggleBtn" onclick="openLogin()">🔐 Admin Login</button>
+    <button id="adminToggleBtn" onclick="window.location.href='/admin/login'">🔐 Admin Login</button>
   </div>
 </div>
 

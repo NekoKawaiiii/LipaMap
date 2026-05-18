@@ -45,6 +45,10 @@ app.register_blueprint(auth_bp)
 def index():
     return send_from_directory('.', 'index.html')
 
+@app.route('/admin/login')
+def admin_login():
+    return send_from_directory('.', 'admin_login.html')
+
 @app.route('/<path:filename>')
 def static_files(filename):
     return send_from_directory('.', filename)
