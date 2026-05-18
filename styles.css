@@ -219,6 +219,8 @@ body::before {
 .nav-item.active { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(134,239,176,0.10)); color: var(--pine-900); font-weight: 600; }
 .nav-item.active::before { content: ''; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent); border-radius: 0 3px 3px 0; }
 .nav-icon { font-size: 0.95rem; width: 20px; text-align: center; }
+.nav-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-count { margin-left: auto; font-size: 0.78rem; color: var(--ink-400); font-variant-numeric: tabular-nums; font-weight: 500; }
 .nav-home { font-weight: 600; color: var(--pine-900); margin-bottom: 8px; font-size: 0.86rem; }
 .nav-divider { height: 1px; background: var(--mint-200); margin: 10px 12px; }
 
@@ -307,30 +309,9 @@ body::before {
 .tab-item:hover { background: var(--mint-100); }
 
 /* ═══════════════════════════════════════
-   RIGHT STATS SIDEBAR
+   LEGEND  (lives inside the left sidebar)
 ═══════════════════════════════════════ */
-.stats-sidebar {
-  width: 158px;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-left: 1px solid var(--glass-border);
-  padding: 16px 10px;
-  overflow-y: auto;
-  flex-shrink: 0;
-  box-shadow: -1px 0 0 rgba(134,239,176,0.3);
-}
-
-.stats-title { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-400); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-.stats-title::after { content: ''; flex: 1; height: 1px; background: var(--mint-200); }
-
-.stat-card { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(240,253,246,0.8)); border: 1px solid var(--mint-200); border-radius: var(--r-sm); padding: 10px 8px; margin-bottom: 6px; text-align: center; transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast); cursor: default; }
-.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(20,83,45,0.12); }
-
-.stat-num { font-size: 1.6rem; font-weight: 700; color: var(--pine-800); line-height: 1; font-family: var(--font-serif); }
-.stat-label { font-size: 0.65rem; color: var(--ink-400); margin-top: 3px; font-weight: 500; }
-
-.legend-box { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--mint-200); }
+.legend-box { margin: 14px 12px 6px; padding-top: 12px; border-top: 1px solid var(--mint-200); }
 .legend-title { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-400); margin-bottom: 8px; }
 .leg-row { display: flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--ink-600); margin-bottom: 6px; font-weight: 400; }
 .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.18); border: 1.5px solid rgba(255,255,255,0.8); }
@@ -543,16 +524,6 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
     display: none;
   }
 
-  /* Narrow the right stats sidebar */
-  .stats-sidebar {
-    width: 130px;
-  }
-
-  /* Slightly smaller stat numbers */
-  .stat-num {
-    font-size: 1.3rem;
-  }
-
   /* Smaller tab buttons */
   .tab-btn {
     padding: 8px 10px;
@@ -585,11 +556,6 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
 
   /* Hide left sidebar — replaced by the mobile drawer */
   .sidebar {
-    display: none;
-  }
-
-  /* Hide right stats sidebar — too cramped on phone */
-  .stats-sidebar {
     display: none;
   }
 
@@ -793,9 +759,6 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
     scrollbar-width: none;
   }
   .chips::-webkit-scrollbar { display: none; }
-
-  /* Stats sidebar shown as horizontal strip on phone */
-  /* (already hidden — keep hidden, no change needed) */
 }
 
 /* ─────────────────────────────────────────
@@ -845,15 +808,6 @@ select.edit-input { appearance: none; background-image: url("data:image/svg+xml,
   }
   .add-panel.open {
     left: 150px;
-  }
-  .stats-sidebar {
-    width: 115px;
-  }
-  .stat-num {
-    font-size: 1.1rem;
-  }
-  .stat-label {
-    font-size: 0.58rem;
   }
 }
 
