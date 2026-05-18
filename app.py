@@ -45,6 +45,11 @@ app.register_blueprint(auth_bp)
 def index():
     return send_from_directory('.', 'index.html')
 
+# NOTE: admin_login.html is also served by the catch-all static route below at /admin_login.html. Both URLs are intentional; the explicit /admin/login is the canonical link.
+@app.route('/admin/login')
+def admin_login():
+    return send_from_directory('.', 'admin_login.html')
+
 @app.route('/<path:filename>')
 def static_files(filename):
     return send_from_directory('.', filename)

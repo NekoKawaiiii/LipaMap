@@ -6,13 +6,14 @@
 /
 ├── app.py                          # Flask app — routes, DB init, delegates to controllers
 ├── controllers/
-│   ├── auth_controller.py          # Admin password verification (reCAPTCHA removed)
+│   ├── auth_controller.py          # Admin login (username + password + reCAPTCHA v2 via stdlib urllib)
 │   ├── category_controller.py      # Category CRUD operations
 │   └── location_controller.py      # Location CRUD operations
 ├── models/
 │   ├── category_model.py           # Category database operations
 │   └── location_model.py           # Location database operations
 ├── index.html                      # Single-page app shell — all UI markup
+├── admin_login.html                # Standalone admin login page (username + password + reCAPTCHA v2)
 ├── script.js                       # All frontend logic (map, admin, panels, search)
 ├── styles.css                      # Full design system — tokens, layout, components, responsive
 ├── requirements.txt                # Python dependencies
@@ -44,9 +45,10 @@ The backend follows an **MVC-inspired architecture** with separation between con
 - `get_db()` — opens a new psycopg2 connection per request (no connection pooling)
 - `init_db()` — creates `locations` and `categories` tables if they don't exist; called at startup
 - Static files served via catch-all `/<path:filename>` route
+- `GET /admin/login` route renders `admin_login.html` (the standalone admin login page) via `send_from_directory`
 
 ### `controllers/`
-- **`auth_controller.py`** — handles `POST /api/verify-password` for admin authentication (password-only, reCAPTCHA was removed)
+- **`auth_controller.py`** — handles `POST /api/verify-login` for admin authentication: verifies a username + password + Google reCAPTCHA v2 token. The captcha is verified server-side against `https://www.google.com/recaptcha/api/siteverify` using stdlib `urllib.request` (no `requests` dependency). The route fails closed (returns `Server misconfiguration`) if `RECAPTCHA_SECRET_KEY` or `ADMIN_USERNAME` env vars are missing
 - **`category_controller.py`** — handles `GET/POST /api/categories` and `DELETE /api/categories/<id>`
 - **`location_controller.py`** — handles `GET/POST /api/locations` and `DELETE /api/locations/<id>`
 
@@ -55,7 +57,8 @@ The backend follows an **MVC-inspired architecture** with separation between con
 - **`location_model.py`** — database operations for locations (CRUD)
 
 Routes follow REST conventions:
-- `POST /api/verify-password` — admin password authentication
+- `GET /admin/login` — standalone admin login page (served from `admin_login.html`)
+- `POST /api/verify-login` — admin login (username + password + reCAPTCHA v2 token)
 - `GET/POST /api/locations` — list all / add new location
 - `DELETE /api/locations/<id>` — remove a location
 - `GET/POST /api/categories` — list all / add new category
@@ -107,4 +110,4 @@ Organized into numbered sections (comments mark each):
 - `info` field is stored as a JSON string in the DB and parsed with `JSON.parse()` on the frontend
 - Coordinates are validated client-side to stay within Lipa City bounds before submission
 - Images are uploaded to Cloudinary; `image_path` stores the full Cloudinary HTTPS URL
-- Admin password is verified server-side via `POST /api/verify-password`; the `ADMIN_PASSWORD` env var holds the value
+- Admin login lives at `GET /admin/login`; the form POSTs username + password + reCAPTCHA token to `/api/verify-login`. `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `RECAPTCHA_SECRET_KEY` env vars are required server-side (the route fails closed if `ADMIN_USERNAME` or `RECAPTCHA_SECRET_KEY` are missing). On success the page sets `sessionStorage["lipamap_admin"]="1"` and redirects to `/`; `script.js` reads-and-clears that flag once on load to enable admin mode for the current page view only — refreshing `/` clears admin mode (Option Y, no persistent session)

@@ -28,6 +28,9 @@
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `ADMIN_USERNAME` | Admin login username (required, no default — the `/api/verify-login` route fails closed if unset) |
+| `ADMIN_PASSWORD` | Admin login password (defaults to `'admin123'` if unset — set this in production) |
+| `RECAPTCHA_SECRET_KEY` | Google reCAPTCHA v2 secret key for verifying the login page captcha (required, no default — the `/api/verify-login` route fails closed if unset) |
 
 Store these in `.env` (gitignored). Never commit secrets.
 

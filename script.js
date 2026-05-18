@@ -16,43 +16,6 @@ L.Icon.Default.mergeOptions({ iconUrl: '', shadowUrl: '' });
 var isAdmin = false;
 var currentMarkerData = null;
 
-function openLogin() {
-  document.getElementById('loginModal').classList.add('open');
-  document.getElementById('adminPassword').value = '';
-  document.getElementById('loginError').classList.remove('show');
-  setTimeout(function () { document.getElementById('adminPassword').focus(); }, 100);
-}
-
-function closeLogin() {
-  document.getElementById('loginModal').classList.remove('open');
-}
-
-function attemptLogin() {
-  var pw = document.getElementById('adminPassword').value;
-
-  // Verify password on the backend
-  fetch('/api/verify-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: pw })
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.success) {
-      isAdmin = true;
-      closeLogin();
-      activateAdminMode();
-    } else {
-      document.getElementById('loginError').classList.add('show');
-      document.getElementById('adminPassword').value = '';
-      document.getElementById('adminPassword').focus();
-    }
-  })
-  .catch(function() {
-    showToast('❌ Login error. Please try again.');
-  });
-}
-
 function activateAdminMode() {
   document.querySelectorAll('.admin-only').forEach(function (el) {
     el.classList.add('visible');
@@ -69,6 +32,7 @@ function activateAdminMode() {
 }
 
 function adminLogout() {
+  sessionStorage.removeItem('lipamap_admin');
   isAdmin = false;
   document.querySelectorAll('.admin-only').forEach(function (el) {
     el.classList.remove('visible');
@@ -79,15 +43,23 @@ function adminLogout() {
   var btn = document.getElementById('adminToggleBtn');
   btn.textContent = '🔐 Admin Login';
   btn.classList.remove('logged-in');
-  btn.onclick = openLogin;
+  btn.onclick = function () { window.location.href = '/admin/login'; };
   closeSettings();
   closeAddPanel();
   showToast('👋 Logged out of admin mode.');
 }
 
-document.getElementById('adminPassword').addEventListener('keyup', function (e) {
-  if (e.key === 'Enter') attemptLogin();
-});
+// One-shot admin handoff from /admin/login (Option Y):
+// reading-and-clearing the flag means a hard refresh of /
+// returns the user to viewer mode. removeItem MUST come
+// before activateAdminMode().
+(function () {
+  if (sessionStorage.getItem('lipamap_admin') === '1') {
+    sessionStorage.removeItem('lipamap_admin');
+    isAdmin = true;
+    activateAdminMode();
+  }
+})();
 
 
 /* ═══════════════════════════════════════
@@ -599,7 +571,7 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
 ═══════════════════════════════════════ */
 
 function openAddPanel() {
-  if (!isAdmin) { openLogin(); return; }
+  if (!isAdmin) { window.location.href = '/admin/login'; return; }
   document.getElementById('addPanel').classList.add('open');
 }
 
