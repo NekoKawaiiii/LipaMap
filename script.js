@@ -199,6 +199,10 @@ function updateCounts() {
   Object.keys(counts).forEach(function (k) {
     var el = document.getElementById(k + 'Count');
     if (el) el.textContent = counts[k];
+    var navEl = document.getElementById('navcount-' + k);
+    if (navEl) navEl.textContent = '(' + counts[k] + ')';
+    var mobNavEl = document.getElementById('mobilenavcount-' + k);
+    if (mobNavEl) mobNavEl.textContent = '(' + counts[k] + ')';
   });
 }
 
@@ -564,6 +568,10 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
   // Directly update the stat card
   var el = document.getElementById(category + 'Count');
   if (el) el.textContent = counts[category];
+  var navEl = document.getElementById('navcount-' + category);
+  if (navEl) navEl.textContent = '(' + counts[category] + ')';
+  var mobNavEl = document.getElementById('mobilenavcount-' + category);
+  if (mobNavEl) mobNavEl.textContent = '(' + counts[category] + ')';
 
   if (heatmapActive) { buildChoropleth(); }
 }
@@ -936,6 +944,10 @@ function removeMarkerFromMap(data) {
       counts[data.category]--;
       var el = document.getElementById(data.category + 'Count');
       if (el) el.textContent = counts[data.category];
+      var navEl = document.getElementById('navcount-' + data.category);
+      if (navEl) navEl.textContent = '(' + counts[data.category] + ')';
+      var mobNavEl = document.getElementById('mobilenavcount-' + data.category);
+      if (mobNavEl) mobNavEl.textContent = '(' + counts[data.category] + ')';
       removed = true;
     }
   });
@@ -1466,7 +1478,10 @@ function addCategoryToUI(cat) {
     var navItem = document.createElement('div');
     navItem.className = 'nav-item';
     navItem.id = sidebarId;
-    navItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
+    navItem.innerHTML =
+      '<span class="nav-icon">' + cat.emoji + '</span>' +
+      '<span class="nav-text">' + cat.label + '</span>' +
+      '<span class="nav-count" id="navcount-' + cat.name + '">(' + (counts[cat.name] || 0) + ')</span>';
     navItem.onclick = function() { soloLayer(cat.name); };
 
     var sectionId = cat.group_type === 'waste' ? 'sidebar-waste' : 'sidebar-green';
@@ -1497,19 +1512,7 @@ function addCategoryToUI(cat) {
     selectEl.appendChild(option);
   }
 
-  // Add to stats sidebar
-  var statsId = cat.name + 'Count';
-  if (!document.getElementById(statsId)) {
-    var statCard = document.createElement('div');
-    statCard.className = 'stat-card';
-    statCard.innerHTML =
-      '<div class="stat-num" id="' + statsId + '">' + (counts[cat.name] || 0) + '</div>' +
-      '<div class="stat-label">' + cat.label + '</div>';
-    var legendBox = document.querySelector('.legend-box');
-    if (legendBox) {
-      document.getElementById('statsSidebar').insertBefore(statCard, legendBox);
-    }
-  }
+  // Stat cards have been removed; counts now live inline in the sidebar nav items.
 
   // Add to legend
   var legendId = 'legend-' + cat.name;
@@ -1530,7 +1533,10 @@ function addCategoryToUI(cat) {
     var mobileItem = document.createElement('div');
     mobileItem.className = 'nav-item';
     mobileItem.id = mobileId;
-    mobileItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
+    mobileItem.innerHTML =
+      '<span class="nav-icon">' + cat.emoji + '</span>' +
+      '<span class="nav-text">' + cat.label + '</span>' +
+      '<span class="nav-count" id="mobilenavcount-' + cat.name + '">(' + (counts[cat.name] || 0) + ')</span>';
     mobileItem.onclick = function() { soloLayer(cat.name); closeMobileMenu(); };
 
     var mobileSectionId = cat.group_type === 'waste' ? 'mobile-waste' : 'mobile-green';
