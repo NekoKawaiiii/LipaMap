@@ -51,6 +51,11 @@
       <div class="nav-label">Waste Management</div>
       <div class="nav-section" id="sidebar-waste"></div>
 
+      <div class="legend-box">
+        <div class="legend-title">Legend</div>
+        <!-- Legend rows are injected dynamically by addCategoryToUI() -->
+      </div>
+
       <div class="nav-divider"></div>
 
       <div class="nav-section">
@@ -96,16 +101,7 @@
       </div>
     </div>
 
-    <!-- RIGHT STATS SIDEBAR -->
-    <div class="stats-sidebar" id="statsSidebar">
-      <div class="stats-title">Statistics</div>
-      <!-- Stat cards are injected dynamically by addCategoryToUI() -->
-
-      <div class="legend-box">
-        <div class="legend-title">Legend</div>
-        <!-- Legend rows are injected dynamically by addCategoryToUI() -->
-      </div>
-    </div>
+    <!-- RIGHT STATS SIDEBAR removed; legend relocated into left sidebar for more map area on mobile -->
 
   </div><!-- end body-row -->
 </div><!-- end app-shell -->
@@ -397,6 +393,17 @@
   <div class="settings-footer">
     <span id="adminStatusLabel">👁️ Viewer Mode</span>
     <button id="adminToggleBtn" onclick="window.location.href='/admin/login'">🔐 Admin Login</button>
+  </div>
+</div>
+
+<!-- ══════════════ APP MODAL (about / contact / confirm) ══════════════ -->
+<div class="lp-modal-overlay" id="lpModal" onclick="onAppModalOverlayClick(event)">
+  <div class="lp-modal-card" id="lpModalCard" role="dialog" aria-modal="true" aria-labelledby="lpModalTitle">
+    <button class="lp-modal-close" type="button" onclick="closeAppModal()" aria-label="Close">✕</button>
+    <div class="lp-modal-icon" id="lpModalIcon"></div>
+    <h2 class="lp-modal-title" id="lpModalTitle"></h2>
+    <div class="lp-modal-body" id="lpModalBody"></div>
+    <div class="lp-modal-actions" id="lpModalActions"></div>
   </div>
 </div>
 

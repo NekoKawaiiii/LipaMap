@@ -5,8 +5,15 @@
    ═══════════════════════════════════════════════════════════ */
 
 // Disable Leaflet's default blue teardrop icon
+// Use a transparent 1x1 pixel data URI so browsers don't render a "broken image" placeholder.
+// Setting iconUrl to an empty string was unreliable across browsers (some showed a broken-image icon).
+var TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({ iconUrl: '', shadowUrl: '' });
+L.Icon.Default.mergeOptions({
+  iconUrl:       TRANSPARENT_PIXEL,
+  iconRetinaUrl: TRANSPARENT_PIXEL,
+  shadowUrl:     TRANSPARENT_PIXEL
+});
 
 
 /* ═══════════════════════════════════════
@@ -192,6 +199,10 @@ function updateCounts() {
   Object.keys(counts).forEach(function (k) {
     var el = document.getElementById(k + 'Count');
     if (el) el.textContent = counts[k];
+    var navEl = document.getElementById('navcount-' + k);
+    if (navEl) navEl.textContent = '(' + counts[k] + ')';
+    var mobNavEl = document.getElementById('mobilenavcount-' + k);
+    if (mobNavEl) mobNavEl.textContent = '(' + counts[k] + ')';
   });
 }
 
@@ -557,6 +568,10 @@ function addMarker(category, coords, name, imgSrc, desc, info, dbId, address) {
   // Directly update the stat card
   var el = document.getElementById(category + 'Count');
   if (el) el.textContent = counts[category];
+  var navEl = document.getElementById('navcount-' + category);
+  if (navEl) navEl.textContent = '(' + counts[category] + ')';
+  var mobNavEl = document.getElementById('mobilenavcount-' + category);
+  if (mobNavEl) mobNavEl.textContent = '(' + counts[category] + ')';
 
   if (heatmapActive) { buildChoropleth(); }
 }
@@ -890,10 +905,24 @@ function previewEditImage(input) {
 function deleteLocation() {
   if (!currentMarkerData) { showToast('❌ No location selected!'); return; }
 
-  var confirmDelete = window.confirm('🗑️ Are you sure you want to delete "' + currentMarkerData.name + '"?\n\nThis cannot be undone!');
-  if (!confirmDelete) return;
-
   var dataToDelete = currentMarkerData;
+
+  openAppModal({
+    icon: '🗑️',
+    title: 'Delete this location?',
+    danger: true,
+    html:
+      '<p>You are about to delete <b>' + dataToDelete.name + '</b>.</p>' +
+      '<p style="color:#991b1b;font-weight:600;margin-top:10px;">This action cannot be undone.</p>',
+    actions: [
+      { label: 'Cancel', kind: 'secondary' },
+      { label: 'Delete', kind: 'danger', onClick: function () { performDelete(dataToDelete); } }
+    ]
+  });
+}
+
+function performDelete(dataToDelete) {
+  if (!dataToDelete) return;
 
   if (!dataToDelete.id) {
     removeMarkerFromMap(dataToDelete);
@@ -929,6 +958,10 @@ function removeMarkerFromMap(data) {
       counts[data.category]--;
       var el = document.getElementById(data.category + 'Count');
       if (el) el.textContent = counts[data.category];
+      var navEl = document.getElementById('navcount-' + data.category);
+      if (navEl) navEl.textContent = '(' + counts[data.category] + ')';
+      var mobNavEl = document.getElementById('mobilenavcount-' + data.category);
+      if (mobNavEl) mobNavEl.textContent = '(' + counts[data.category] + ')';
       removed = true;
     }
   });
@@ -1078,7 +1111,22 @@ document.getElementById('search').addEventListener('keyup', function (e) {
 ═══════════════════════════════════════ */
 
 function showAbout() {
-  alert('🌿 About Lipa City\n\nLipa City is a highly urbanized city in Batangas, Philippines, known as the "Coffee Capital of the Philippines."\n\nArea: 210.41 km²  |  Population: ~349,000 (2020)\nKnown for: Café de Lipa, Mt. Malarayat, Ayala Malls Solenad\n\nLipaMap tracks green infrastructure and waste management to support environmental awareness, urban planning, and community access to organized data.');
+  openAppModal({
+    icon: '🌿',
+    title: 'About Lipa City',
+    html:
+      '<p>Lipa City is a highly urbanized city in Batangas, Philippines, ' +
+      'known as the <b>"Coffee Capital of the Philippines."</b></p>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:14px 0;font-size:0.84rem;">' +
+        '<div><b>Area:</b> 210.41 km²</div>' +
+        '<div><b>Population:</b> ~349,000 (2020)</div>' +
+      '</div>' +
+      '<p><b>Known for:</b> Café de Lipa, Mt. Malarayat, Ayala Malls Solenad.</p>' +
+      '<p style="margin-top:14px;font-size:0.82rem;color:var(--ink-500);">' +
+        'LipaMap tracks green infrastructure and waste management to support environmental ' +
+        'awareness, urban planning, and community access to organized data.' +
+      '</p>'
+  });
 }
 
 
@@ -1291,7 +1339,21 @@ function locateMe() {
 }
 
 function showContact() {
-  alert('✉️ Contact / Feedback\n\nMaintained by: Lipa City ENRO\nEmail: lipamap@lipa.gov.ph\nPhone: (043) 123-4567\nAddress: City Hall, Lipa City, Batangas\n\nTo report incorrect data, email with subject: [LipaMap Update]');
+  openAppModal({
+    icon: '✉️',
+    title: 'Contact / Feedback',
+    html:
+      '<p style="margin-bottom:12px;"><b>Maintained by:</b> Lipa City ENRO</p>' +
+      '<ul style="list-style:none;padding:0;margin:0 0 14px 0;display:flex;flex-direction:column;gap:6px;font-size:0.86rem;">' +
+        '<li>📧 <a href="mailto:lipamap@lipa.gov.ph">lipamap@lipa.gov.ph</a></li>' +
+        '<li>📞 <a href="tel:+63431234567">(043) 123-4567</a></li>' +
+        '<li>📍 City Hall, Lipa City, Batangas</li>' +
+      '</ul>' +
+      '<p style="font-size:0.78rem;color:var(--ink-500);background:rgba(34,197,94,0.06);' +
+        'border:1px solid rgba(34,197,94,0.18);border-radius:8px;padding:8px 10px;">' +
+        'To report incorrect data, email with subject: <b>[LipaMap Update]</b>' +
+      '</p>'
+  });
 }
 
 
@@ -1459,7 +1521,10 @@ function addCategoryToUI(cat) {
     var navItem = document.createElement('div');
     navItem.className = 'nav-item';
     navItem.id = sidebarId;
-    navItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
+    navItem.innerHTML =
+      '<span class="nav-icon">' + cat.emoji + '</span>' +
+      '<span class="nav-text">' + cat.label + '</span>' +
+      '<span class="nav-count" id="navcount-' + cat.name + '">(' + (counts[cat.name] || 0) + ')</span>';
     navItem.onclick = function() { soloLayer(cat.name); };
 
     var sectionId = cat.group_type === 'waste' ? 'sidebar-waste' : 'sidebar-green';
@@ -1490,19 +1555,7 @@ function addCategoryToUI(cat) {
     selectEl.appendChild(option);
   }
 
-  // Add to stats sidebar
-  var statsId = cat.name + 'Count';
-  if (!document.getElementById(statsId)) {
-    var statCard = document.createElement('div');
-    statCard.className = 'stat-card';
-    statCard.innerHTML =
-      '<div class="stat-num" id="' + statsId + '">' + (counts[cat.name] || 0) + '</div>' +
-      '<div class="stat-label">' + cat.label + '</div>';
-    var legendBox = document.querySelector('.legend-box');
-    if (legendBox) {
-      document.getElementById('statsSidebar').insertBefore(statCard, legendBox);
-    }
-  }
+  // Stat cards have been removed; counts now live inline in the sidebar nav items.
 
   // Add to legend
   var legendId = 'legend-' + cat.name;
@@ -1523,7 +1576,10 @@ function addCategoryToUI(cat) {
     var mobileItem = document.createElement('div');
     mobileItem.className = 'nav-item';
     mobileItem.id = mobileId;
-    mobileItem.innerHTML = '<span class="nav-icon">' + cat.emoji + '</span> ' + cat.label;
+    mobileItem.innerHTML =
+      '<span class="nav-icon">' + cat.emoji + '</span>' +
+      '<span class="nav-text">' + cat.label + '</span>' +
+      '<span class="nav-count" id="mobilenavcount-' + cat.name + '">(' + (counts[cat.name] || 0) + ')</span>';
     mobileItem.onclick = function() { soloLayer(cat.name); closeMobileMenu(); };
 
     var mobileSectionId = cat.group_type === 'waste' ? 'mobile-waste' : 'mobile-green';
@@ -1534,7 +1590,102 @@ function addCategoryToUI(cat) {
 
 
 /* ═══════════════════════════════════════
-   23. STARTUP
+   23. APP MODAL (themed alert / confirm)
+═══════════════════════════════════════ */
+
+var _appModalKeyHandler = null;
+
+function openAppModal(opts) {
+  opts = opts || {};
+  var overlay  = document.getElementById('lpModal');
+  var card     = document.getElementById('lpModalCard');
+  var iconEl   = document.getElementById('lpModalIcon');
+  var titleEl  = document.getElementById('lpModalTitle');
+  var bodyEl   = document.getElementById('lpModalBody');
+  var actionsEl = document.getElementById('lpModalActions');
+  if (!overlay || !card) return;
+
+  // Icon
+  if (opts.icon) {
+    iconEl.textContent = opts.icon;
+    iconEl.style.display = '';
+  } else {
+    iconEl.textContent = '';
+    iconEl.style.display = 'none';
+  }
+
+  // Title
+  titleEl.textContent = opts.title || '';
+
+  // Body (HTML allowed; content is hardcoded by us)
+  bodyEl.innerHTML = opts.html || '';
+
+  // Danger variant
+  if (opts.danger) {
+    card.classList.add('danger');
+  } else {
+    card.classList.remove('danger');
+  }
+
+  // Actions
+  actionsEl.innerHTML = '';
+  var actions = opts.actions || [];
+  for (var i = 0; i < actions.length; i++) {
+    (function (action) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      var kind = action.kind || 'primary';
+      btn.className = 'lp-modal-btn ' + kind;
+      btn.textContent = action.label || 'OK';
+      btn.onclick = function () {
+        if (typeof action.onClick === 'function') {
+          try { action.onClick(); } catch (e) { console.error(e); }
+        }
+        closeAppModal();
+      };
+      actionsEl.appendChild(btn);
+    })(actions[i]);
+  }
+
+  // Lock body scroll
+  document.body.style.overflow = 'hidden';
+
+  // Show
+  overlay.classList.add('open');
+
+  // ESC to close
+  if (_appModalKeyHandler) {
+    document.removeEventListener('keydown', _appModalKeyHandler);
+  }
+  _appModalKeyHandler = function (e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      closeAppModal();
+    }
+  };
+  document.addEventListener('keydown', _appModalKeyHandler);
+}
+
+function closeAppModal() {
+  var overlay = document.getElementById('lpModal');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  if (_appModalKeyHandler) {
+    document.removeEventListener('keydown', _appModalKeyHandler);
+    _appModalKeyHandler = null;
+  }
+}
+
+function onAppModalOverlayClick(e) {
+  // Close only when the click target is the overlay itself, not the card
+  if (e.target && e.target.id === 'lpModal') {
+    closeAppModal();
+  }
+}
+
+
+/* ═══════════════════════════════════════
+   24. STARTUP
    Load categories first, then locations
 ═══════════════════════════════════════ */
 loadCustomCategories().then(function() {
