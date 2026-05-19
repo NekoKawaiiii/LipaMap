@@ -396,6 +396,17 @@
   </div>
 </div>
 
+<!-- ══════════════ APP MODAL (about / contact / confirm) ══════════════ -->
+<div class="lp-modal-overlay" id="lpModal" onclick="onAppModalOverlayClick(event)">
+  <div class="lp-modal-card" id="lpModalCard" role="dialog" aria-modal="true" aria-labelledby="lpModalTitle">
+    <button class="lp-modal-close" type="button" onclick="closeAppModal()" aria-label="Close">✕</button>
+    <div class="lp-modal-icon" id="lpModalIcon"></div>
+    <h2 class="lp-modal-title" id="lpModalTitle"></h2>
+    <div class="lp-modal-body" id="lpModalBody"></div>
+    <div class="lp-modal-actions" id="lpModalActions"></div>
+  </div>
+</div>
+
 <!-- ══════════════ MOBILE DRAWER (phone/tablet nav) ══════════════ -->
 <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
 <nav class="mobile-drawer" id="mobileDrawer">
