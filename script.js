@@ -5,8 +5,15 @@
    ═══════════════════════════════════════════════════════════ */
 
 // Disable Leaflet's default blue teardrop icon
+// Use a transparent 1x1 pixel data URI so browsers don't render a "broken image" placeholder.
+// Setting iconUrl to an empty string was unreliable across browsers (some showed a broken-image icon).
+var TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({ iconUrl: '', shadowUrl: '' });
+L.Icon.Default.mergeOptions({
+  iconUrl:       TRANSPARENT_PIXEL,
+  iconRetinaUrl: TRANSPARENT_PIXEL,
+  shadowUrl:     TRANSPARENT_PIXEL
+});
 
 
 /* ═══════════════════════════════════════
