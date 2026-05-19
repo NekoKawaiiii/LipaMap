@@ -1557,17 +1557,19 @@ function addCategoryToUI(cat) {
 
   // Stat cards have been removed; counts now live inline in the sidebar nav items.
 
-  // Add to legend
-  var legendId = 'legend-' + cat.name;
-  if (!document.getElementById(legendId)) {
+  // Add to legend (both desktop sidebar legend and mobile drawer legend)
+  var legendBoxes = document.querySelectorAll('.legend-box');
+  for (var li = 0; li < legendBoxes.length; li++) {
+    var box = legendBoxes[li];
+    // Skip if this box already has a row for this category
+    if (box.querySelector('[data-leg-cat="' + cat.name + '"]')) continue;
     var legRow = document.createElement('div');
     legRow.className = 'leg-row';
-    legRow.id = legendId;
+    legRow.setAttribute('data-leg-cat', cat.name);
     legRow.innerHTML =
       '<span class="leg-dot" style="background:' + cat.color + '"></span>' +
       cat.label;
-    var legendBox = document.querySelector('.legend-box');
-    if (legendBox) legendBox.appendChild(legRow);
+    box.appendChild(legRow);
   }
 
   // Add to mobile drawer
