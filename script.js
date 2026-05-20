@@ -59,12 +59,21 @@ function adminLogout() {
 // One-shot admin handoff from /admin/login (Option Y):
 // reading-and-clearing the flag means a hard refresh of /
 // returns the user to viewer mode. removeItem MUST come
-// before activateAdminMode().
+// before activateAdminMode(). Activation is deferred until
+// DOMContentLoaded so admin-only elements declared after
+// this <script> tag (e.g. #categoryPanel) are present when
+// activateAdminMode() queries `.admin-only`.
 (function () {
-  if (sessionStorage.getItem('lipamap_admin') === '1') {
+  function tryActivateAdmin() {
+    if (sessionStorage.getItem('lipamap_admin') !== '1') return;
     sessionStorage.removeItem('lipamap_admin');
     isAdmin = true;
     activateAdminMode();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryActivateAdmin);
+  } else {
+    tryActivateAdmin();
   }
 })();
 
@@ -880,6 +889,10 @@ function saveEdit() {
     // Clear the file input
     document.getElementById('editImg').value = '';
 
+    // Refresh the marker's popup HTML so name/desc/image changes
+    // appear immediately on the map without needing a hard refresh.
+    refreshMarkerPopup(currentMarkerData);
+
     showToast('✅ Changes saved!');
   })
   .catch(function(err) {
@@ -944,6 +957,28 @@ function performDelete(dataToDelete) {
   .catch(function(error) {
     console.error('Delete error:', error);
     showToast('❌ Could not delete. Check console for details.');
+  });
+}
+
+function refreshMarkerPopup(data) {
+  if (!data || !data.id || !data.category) return;
+  if (!layers[data.category]) return;
+  layers[data.category].eachLayer(function (marker) {
+    if (!marker._data || marker._data.id !== data.id) return;
+    // Sync the marker's data reference so future opens use latest values
+    marker._data.img     = data.img;
+    marker._data.name    = data.name;
+    marker._data.desc    = data.desc;
+    marker._data.info    = data.info;
+    marker._data.address = data.address;
+    var imgSrc = data.img || '';
+    var popup =
+      '<div style="min-width:150px;font-family:Outfit,sans-serif">' +
+        '<b style="font-size:0.88rem;color:#14532d">' + data.name + '</b><br>' +
+        '<img src="' + imgSrc + '" style="width:150px;height:85px;object-fit:cover;border-radius:8px;margin:6px 0;display:none" onload="this.style.display=\'block\'" onerror="this.style.display=\'none\'">' +
+        '<span style="font-size:0.72rem;color:#9ca3af">Click marker for full details →</span>' +
+      '</div>';
+    marker.setPopupContent(popup);
   });
 }
 
