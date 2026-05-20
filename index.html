@@ -6,7 +6,6 @@
   <title>LipaMap – GIS Dashboard</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -384,7 +383,6 @@
       <p class="settings-note">Visible to admins only.</p>
       <label class="toggle-row"><span>Allow Public Comments</span><input type="checkbox" /></label>
       <label class="toggle-row"><span>Show Unverified Locations</span><input type="checkbox" /></label>
-      <button class="btn-danger" onclick="toggleBoundaryEditor()" id="boundaryEditorBtn" style="background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.12));color:#1d4ed8;border-color:rgba(59,130,246,0.35)">✏️ Edit Barangay Boundaries</button>
       <button class="btn-danger" onclick="exportToCSV()">📤 Export All Data (CSV)</button>
       <button class="btn-danger" onclick="showToast('Backup feature coming soon!')">🗄️ Backup Database</button>
       <button class="btn-danger" onclick="openCategoryManager()" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(134,239,176,0.12));color:var(--pine-800);border-color:var(--mint-300)">🏷️ Manage Categories</button>
@@ -432,7 +430,6 @@
 <!-- SCRIPTS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <script src="script.js"></script>
 
 <!-- ══════════════ CATEGORY MANAGER PANEL ══════════════ -->
