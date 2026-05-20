@@ -3,3 +3,4 @@ uploads/
 __pycache__/
 *.pyc
 lipamap.db
+_data_import/
