@@ -223,20 +223,28 @@ function updateCounts() {
 // COLORS and LABELS are now fully dynamic — populated by addCategoryToUI()
 var COLORS = {};
 var LABELS = {};
+var EMOJIS = {};
 
 function makeIcon(category) {
   var c = COLORS[category] || '#6b7280';
+  var emoji = EMOJIS[category] || '📍';
   return L.divIcon({
     className: '',
-    iconAnchor: [12, 12],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
     html:
       '<div style="' +
-        'background:' + c + ';' +
-        'width:22px;height:22px;' +
+        'display:flex;align-items:center;justify-content:center;' +
+        'width:32px;height:32px;' +
+        'background:rgba(255,255,255,0.95);' +
         'border-radius:50%;' +
-        'border:3px solid rgba(255,255,255,0.9);' +
-        'box-shadow:0 3px 10px rgba(0,0,0,0.25),0 0 0 1px ' + c + '40;' +
-      '"></div>'
+        'border:3px solid ' + c + ';' +
+        'box-shadow:0 3px 10px rgba(0,0,0,0.2),0 0 0 1px ' + c + '30;' +
+        'font-size:16px;' +
+        'line-height:1;' +
+        'cursor:pointer;' +
+        'transition:transform 0.1s ease;' +
+      '">' + emoji + '</div>'
   });
 }
 
@@ -1547,6 +1555,7 @@ function deleteCustomCategory(id, btn) {
 function addCategoryToUI(cat) {
   COLORS[cat.name] = cat.color;
   LABELS[cat.name] = cat.label;
+  EMOJIS[cat.name] = cat.emoji;
 
   if (!layers[cat.name]) {
     layers[cat.name] = L.layerGroup().addTo(map);
