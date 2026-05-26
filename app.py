@@ -21,7 +21,7 @@ load_dotenv()
 import config  # noqa: F401 — runs cloudinary.config() on import
 
 # ─── MODELS (DB init + seed) ───
-from models.location_model import init_locations_table, seed_locations, normalize_existing_categories
+from models.location_model import init_locations_table, seed_locations, normalize_existing_categories, init_location_images_table, backfill_location_images
 from models.category_model import init_categories_table, seed_categories
 
 # ─── CONTROLLERS (Blueprints) ───
@@ -57,10 +57,12 @@ def static_files(filename):
 # ─── INITIALISE DATABASE ON STARTUP ───
 # Runs for both Gunicorn (Render) and direct `python app.py`
 init_locations_table()
+init_location_images_table()
 init_categories_table()
 seed_categories()
 seed_locations()
 normalize_existing_categories()
+backfill_location_images()
 print('✅ LipaMap is ready!')
 
 # ─── DEV SERVER ───

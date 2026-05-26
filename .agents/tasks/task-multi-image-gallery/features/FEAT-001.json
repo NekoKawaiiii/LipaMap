@@ -1,0 +1,34 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Add backend support for multi-image storage: new location_images table, new API endpoints, and update existing endpoints to handle multiple file uploads",
+  "status": "completed",
+  "steps": [
+    "1. In models/location_model.py, add a new function init_location_images_table() that creates: CREATE TABLE IF NOT EXISTS location_images (id SERIAL PRIMARY KEY, location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE, image_url TEXT NOT NULL, display_order INTEGER NOT NULL DEFAULT 0). Add a unique constraint on (location_id, image_url).",
+    "2. In models/location_model.py, add CRUD functions for the images table: get_images_for_location(location_id) returns list of {id, image_url, display_order} ordered by display_order; add_location_image(location_id, image_url, display_order) inserts a row; delete_location_image(image_id) removes a row.",
+    "3. In app.py, import and call init_location_images_table() during startup (after init_locations_table()).",
+    "4. In controllers/location_controller.py, update the POST /api/locations endpoint: after uploading the primary image to Cloudinary, check for additional files in request.files.getlist('images'). Upload each to Cloudinary and insert into location_images table with incrementing display_order. Also insert the primary image as display_order=0 in location_images.",
+    "5. In controllers/location_controller.py, update the PUT /api/locations/<id> endpoint: check for request.files.getlist('images'). Upload each to Cloudinary, get the current max display_order for that location, and insert new rows with incrementing order. If a new primary image was uploaded, also insert/update it in location_images at display_order=0.",
+    "6. In controllers/location_controller.py, add a new GET /api/locations/<id>/images endpoint that calls get_images_for_location() and returns JSON array of image objects.",
+    "7. In controllers/location_controller.py, add a new DELETE /api/locations/<id>/images/<image_id> endpoint that calls delete_location_image() to remove a specific image.",
+    "8. In models/location_model.py, add a migration/backfill function called backfill_location_images() that checks all existing locations with a non-empty image_path and inserts them into location_images if not already present (with display_order=0, ON CONFLICT DO NOTHING). Call this in app.py after init_location_images_table()."
+  ],
+  "acceptance_criteria": [
+    "Python files have valid syntax (verified with py_compile)",
+    "init_location_images_table() creates the table with correct schema",
+    "GET /api/locations/<id>/images endpoint exists and returns image list",
+    "POST /api/locations accepts multiple files via 'images' field",
+    "PUT /api/locations/<id> accepts additional images via 'images' field",
+    "DELETE /api/locations/<id>/images/<image_id> endpoint exists",
+    "backfill_location_images() migrates existing image_path entries",
+    "All code uses psycopg2 parameterized queries (no SQL injection)"
+  ],
+  "verification": [
+    "python -c \"import py_compile; py_compile.compile('models/location_model.py', doraise=True)\"",
+    "python -c \"import py_compile; py_compile.compile('controllers/location_controller.py', doraise=True)\"",
+    "python -c \"import py_compile; py_compile.compile('app.py', doraise=True)\"",
+    "grep -n 'location_images' models/location_model.py controllers/location_controller.py app.py"
+  ],
+  "blocked_reason": null,
+  "findings": "All three files pass py_compile validation. The POST endpoint now returns the new location id from create_location() to use for image inserts. The PUT endpoint fetches existing images to determine max display_order before adding new ones."
+}
