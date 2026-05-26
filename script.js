@@ -225,6 +225,7 @@ var COLORS = {};
 var LABELS = {};
 
 // ─── CATEGORY NORMALIZATION (frontend) ───
+// NOTE: This alias map must be kept in sync with _ALIAS_MAP in models/category_model.py
 var _CATEGORY_ALIAS_MAP = {
   'urban_forest': 'forest',
   'urbanforest': 'forest',
@@ -764,10 +765,11 @@ function submitNewPlace() {
     addMarker(category, [lat, lng], name, imgPath, desc, info, null, address);
 
     var emoji = { park:'🌳', garden:'🌱', forest:'🌲', wetland:'💧', recycle:'♻️', compost:'🍂', collection:'🚛' };
+    var normCat = normalizeCategory(category);
     var newItem = document.createElement('div');
     newItem.className = 'tab-item';
     newItem.style.cursor = 'pointer';
-    newItem.innerHTML = (emoji[category] || LABELS[category] ? (emoji[category]||'📍') : '📍') +
+    newItem.innerHTML = (emoji[normCat] || LABELS[normCat] ? (emoji[normCat]||'📍') : '📍') +
       ' <b>' + name + '</b> — added just now';
     newItem.onclick = function() { map.flyTo([lat, lng], 16); };
 
@@ -782,7 +784,7 @@ function submitNewPlace() {
     var updateItem = document.createElement('div');
     updateItem.className = 'tab-item';
     updateItem.style.cursor = 'pointer';
-    updateItem.innerHTML = (emoji[category]||'📍') + ' <b>' + name + '</b>' +
+    updateItem.innerHTML = (emoji[normCat]||'📍') + ' <b>' + name + '</b>' +
       (address ? ' — ' + address.replace(', Lipa City, Batangas','') : '');
     updateItem.onclick = function() { map.flyTo([lat, lng], 16); };
     updatesTab.prepend(updateItem);
