@@ -2,7 +2,7 @@
   "id": "FEAT-002",
   "type": "feat",
   "description": "Add frontend photo gallery carousel in the detail panel and update add/edit forms to support multiple image uploads. The carousel shows Messenger-style navigation with a counter (e.g. '2/5') and left/right arrow buttons.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. In index.html, replace the single <img> inside .detail-img-wrap with a carousel structure: a container div with class 'gallery-carousel', containing an <img> tag for the current photo, a counter overlay div showing 'N/M', a left arrow button '<' and a right arrow button '>'. Keep the existing detail-img-overlay div.",
     "2. In script.js, add gallery state variables at the top of the file (using var): var galleryImages = []; var galleryIndex = 0;",
@@ -35,5 +35,5 @@
     "python -c \"import py_compile; py_compile.compile('controllers/location_controller.py', doraise=True)\""
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All gallery carousel functionality implemented. Verified no ES6+ syntax (let/const/arrow functions/template literals) exists in script.js. Gallery fetches from /api/locations/<id>/images endpoint (implemented in FEAT-001). Both add and edit forms now support multiple file uploads. CSS uses the existing frosted glass green theme design tokens."
 }
