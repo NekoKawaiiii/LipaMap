@@ -5,6 +5,7 @@
 
 import json
 from config import get_db
+from models.category_model import normalize_category_key
 
 # ─── SEED DATA ───
 SEED_LOCATIONS = [
@@ -221,3 +222,33 @@ def seed_locations():
         print(f'🌱 Seeded {inserted} default location(s).')
     else:
         print('🌱 Seed locations already present, skipping.')
+
+
+def normalize_existing_categories():
+    """Normalize all category values in the locations table.
+
+    Queries all distinct category values, runs each through
+    normalize_category_key(), and updates any rows whose stored
+    value differs from the canonical form.
+    """
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT DISTINCT category FROM locations')
+    rows = cursor.fetchall()
+    updated_total = 0
+    for row in rows:
+        raw = row[0]
+        canonical = normalize_category_key(raw)
+        if canonical != raw:
+            cursor.execute(
+                'UPDATE locations SET category = %s WHERE category = %s',
+                (canonical, raw)
+            )
+            updated_total += cursor.rowcount
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if updated_total:
+        print(f'🔄 Normalized {updated_total} location category value(s).')
+    else:
+        print('🔄 All location categories already canonical.')

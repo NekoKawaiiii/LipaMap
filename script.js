@@ -224,8 +224,33 @@ function updateCounts() {
 var COLORS = {};
 var LABELS = {};
 
+// ─── CATEGORY NORMALIZATION (frontend) ───
+var _CATEGORY_ALIAS_MAP = {
+  'urban_forest': 'forest',
+  'urbanforest': 'forest',
+  'urban_forests': 'forest',
+  'parks': 'park',
+  'gardens': 'garden',
+  'wetlands': 'wetland',
+  'recycling': 'recycle',
+  'recycling_center': 'recycle',
+  'recycling_centers': 'recycle',
+  'collection_point': 'collection',
+  'collection_points': 'collection',
+  'composting': 'compost'
+};
+
+function normalizeCategory(cat) {
+  if (!cat) return cat;
+  var normalized = cat.trim().toLowerCase().replace(/[\s-]/g, '_');
+  if (COLORS[normalized]) return normalized;
+  if (_CATEGORY_ALIAS_MAP[normalized]) return _CATEGORY_ALIAS_MAP[normalized];
+  if (COLORS[cat]) return cat;
+  return normalized;
+}
+
 function makeIcon(category) {
-  var c = COLORS[category] || '#6b7280';
+  var c = COLORS[normalizeCategory(category)] || COLORS[category] || '#6b7280';
   return L.divIcon({
     className: '',
     iconAnchor: [12, 12],
@@ -796,7 +821,7 @@ function openDetail(data) {
   var imgSrc = data.img || '';
   document.getElementById('detailImg').src = imgSrc;
   document.getElementById('detailImg').style.display = imgSrc ? 'block' : 'none';
-  document.getElementById('detailTag').textContent  = LABELS[data.category] || data.category;
+  document.getElementById('detailTag').textContent  = LABELS[normalizeCategory(data.category)] || LABELS[data.category] || data.category;
   document.getElementById('detailName').textContent = data.name;
   document.getElementById('detailCoords').innerHTML =
     '📍 ' + data.coords[0].toFixed(5) + ', ' + data.coords[1].toFixed(5);
@@ -1444,7 +1469,7 @@ function loadLocationsFromDB() {
         var catEmoji = {
           park:'🌳', garden:'🌱', forest:'🌲', wetland:'💧',
           recycle:'♻️', compost:'🍂', collection:'🚛', mrf:'🏭', solar:'☀️'
-        }[loc.category] || '📍';
+        }[normalizeCategory(loc.category)] || '📍';
         var item = document.createElement('div');
         item.className = 'tab-item';
         item.style.cursor = 'pointer';
