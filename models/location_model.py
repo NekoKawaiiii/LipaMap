@@ -247,3 +247,90 @@ def normalize_existing_categories():
         print(f'🔄 Normalized {updated_total} location category value(s).')
     else:
         print('🔄 All location categories already canonical.')
+
+
+# ─── LOCATION IMAGES TABLE ───
+
+def init_location_images_table():
+    """Create the location_images table if it does not exist."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS location_images (
+            id            SERIAL PRIMARY KEY,
+            location_id   INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+            image_url     TEXT NOT NULL,
+            display_order INTEGER NOT NULL DEFAULT 0,
+            UNIQUE (location_id, image_url)
+        )
+    ''')
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def get_images_for_location(location_id):
+    """Return list of image dicts for a location, ordered by display_order."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT id, image_url, display_order FROM location_images WHERE location_id = %s ORDER BY display_order',
+        (location_id,)
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [
+        {'id': row[0], 'image_url': row[1], 'display_order': row[2]}
+        for row in rows
+    ]
+
+
+def add_location_image(location_id, image_url, display_order):
+    """Insert a new image row for a location."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'INSERT INTO location_images (location_id, image_url, display_order) VALUES (%s, %s, %s)',
+        (location_id, image_url, display_order)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def delete_location_image(image_id):
+    """Remove an image row by its id."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM location_images WHERE id = %s', (image_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def backfill_location_images():
+    """Migrate existing locations with image_path into location_images table."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, image_path FROM locations WHERE image_path IS NOT NULL AND image_path != ''")
+    rows = cursor.fetchall()
+    backfilled = 0
+    for row in rows:
+        location_id = row[0]
+        image_url = row[1]
+        cursor.execute(
+            '''INSERT INTO location_images (location_id, image_url, display_order)
+               VALUES (%s, %s, 0)
+               ON CONFLICT (location_id, image_url) DO NOTHING''',
+            (location_id, image_url)
+        )
+        if cursor.rowcount:
+            backfilled += 1
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if backfilled:
+        print(f'🖼️ Backfilled {backfilled} image(s) into location_images.')
+    else:
+        print('🖼️ No new images to backfill.')
