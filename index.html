@@ -109,7 +109,12 @@
 <div class="detail-panel" id="detailPanel">
   <button class="detail-close" onclick="closeDetail()">✕</button>
   <div class="detail-img-wrap">
-    <img id="detailImg" src="" alt="" onerror="this.parentElement.style.background='var(--mint-100)';this.style.display='none'" />
+    <div class="gallery-carousel" id="galleryCarousel">
+      <img id="detailImg" src="" alt="" onerror="this.parentElement.parentElement.style.background='var(--mint-100)';this.style.display='none'" />
+      <div class="gallery-counter" id="galleryCounter">1/1</div>
+      <button class="gallery-arrow gallery-arrow-left" id="galleryPrevBtn" onclick="galleryPrev()">&#8249;</button>
+      <button class="gallery-arrow gallery-arrow-right" id="galleryNextBtn" onclick="galleryNext()">&#8250;</button>
+    </div>
     <div class="detail-img-overlay"></div>
   </div>
   <div class="detail-body">
@@ -161,12 +166,13 @@
           <textarea class="edit-input" id="editDesc" rows="4"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Photo</label>
+          <label class="form-label">Add More Photos</label>
           <div class="img-preview-box" id="editImgPreviewBox" style="height:100px;margin-bottom:6px;">
             <img id="editImgPreview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;" />
             <div class="upload-hint" id="editImgHint"><div class="upload-icon">🖼️</div><div>Current image shown above</div></div>
           </div>
-          <input type="file" class="edit-input" id="editImg" accept="image/*" onchange="previewEditImage(this)" />
+          <input type="file" class="edit-input" id="editImg" accept="image/*" multiple onchange="previewEditImage(this)" />
+          <span class="gallery-img-count" id="editImgCount"></span>
           <p style="font-size:0.7rem;color:var(--ink-400);margin-top:4px">Leave empty to keep the existing photo.</p>
         </div>
         <button class="btn-save" onclick="saveEdit()">💾 Save Changes</button>
@@ -347,7 +353,8 @@
     <div class="form-group">
   <label class="form-label">Upload Image</label>
   <input type="file" class="edit-input" id="addImg" 
-    accept="image/*" onchange="previewImageFile(this)" />
+    accept="image/*" multiple onchange="previewImageFile(this)" />
+  <span class="gallery-img-count" id="addImgCount"></span>
 </div>
   </div>
 

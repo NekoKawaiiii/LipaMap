@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Add frontend photo gallery carousel in the detail panel and update add/edit forms to support multiple image uploads. The carousel shows Messenger-style navigation with a counter (e.g. '2/5') and left/right arrow buttons.",
+  "status": "in_progress",
+  "steps": [
+    "1. In index.html, replace the single <img> inside .detail-img-wrap with a carousel structure: a container div with class 'gallery-carousel', containing an <img> tag for the current photo, a counter overlay div showing 'N/M', a left arrow button '<' and a right arrow button '>'. Keep the existing detail-img-overlay div.",
+    "2. In script.js, add gallery state variables at the top of the file (using var): var galleryImages = []; var galleryIndex = 0;",
+    "3. In script.js, modify the openDetail(data) function: after setting the main image, fetch GET /api/locations/<data.id>/images. On success, store the image URLs in galleryImages. If the array has items use those; otherwise fall back to [data.img] if data.img exists. Set galleryIndex = 0 and call a new function renderGallery().",
+    "4. In script.js, add function renderGallery() that: sets the carousel img src to galleryImages[galleryIndex], updates the counter text to (galleryIndex+1) + '/' + galleryImages.length, shows/hides the arrows (hide if only 1 image), shows/hides the counter (hide if only 1 image).",
+    "5. In script.js, add function galleryPrev() that decrements galleryIndex (wrapping to end) and calls renderGallery(). Add function galleryNext() that increments galleryIndex (wrapping to 0) and calls renderGallery(). Both must use ES5 syntax only.",
+    "6. In index.html, update the Add Place panel's Photo section: change the file input #addImg to accept multiple files (add 'multiple' attribute). Update the label text to 'Upload Images'.",
+    "7. In script.js, update previewImageFile(input) to handle multiple files: show the first file's preview in the existing preview box, and add a small text below showing how many files were selected (e.g. '3 photos selected').",
+    "8. In script.js, update submitNewPlace(): instead of appending a single 'image' field, append the first file as 'image' (primary/cover) and all files as 'images' using a loop with formData.append('images', files[i]) for each file.",
+    "9. In index.html, update the Admin Tools edit section in the detail panel: change the file input #editImg to accept multiple (add 'multiple' attribute). Update label to 'Add More Photos'. Keep the existing single-image preview for the first file.",
+    "10. In script.js, update saveEdit(): append all selected files as 'images' using formData.append('images', files[i]) in a loop. After successful save, re-fetch the images to refresh the gallery.",
+    "11. In styles.css, add styles for the gallery carousel: .gallery-carousel (position relative, width 100%, height 100%), .gallery-counter (absolute positioned top-right, frosted glass background, showing the counter like '2/5'), .gallery-arrow (absolute positioned left/right center, semi-transparent circular buttons with < and > symbols, hover effects matching the green theme), responsive adjustments for mobile."
+  ],
+  "acceptance_criteria": [
+    "Detail panel shows a photo carousel with left/right arrows when a location has multiple images",
+    "Counter displays 'N/M' format (e.g. '2/5') in the top-right corner of the image area",
+    "Arrows and counter are hidden when there is only one image",
+    "Clicking arrows navigates between photos with wrap-around",
+    "Add form accepts multiple files and sends them to the backend",
+    "Edit form accepts multiple files and sends them as additional images",
+    "All JavaScript uses ES5 only (var, function keyword, no arrow functions, no let/const, no template literals)",
+    "Gallery is styled to match the existing green/nature frosted glass theme",
+    "Gallery works on mobile (responsive arrows and counter)"
+  ],
+  "verification": [
+    "grep -n 'let \\|const \\|=>\\|`' script.js | head -20 (should return empty - no ES6+ syntax)",
+    "grep -n 'galleryNext\\|galleryPrev\\|renderGallery\\|galleryImages' script.js",
+    "grep -n 'gallery-carousel\\|gallery-counter\\|gallery-arrow' styles.css",
+    "grep -n 'gallery-carousel\\|galleryNext\\|galleryPrev' index.html",
+    "python -c \"import py_compile; py_compile.compile('controllers/location_controller.py', doraise=True)\""
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

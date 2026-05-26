@@ -22,6 +22,8 @@ L.Icon.Default.mergeOptions({
 
 var isAdmin = false;
 var currentMarkerData = null;
+var galleryImages = [];
+var galleryIndex = 0;
 
 function activateAdminMode() {
   document.querySelectorAll('.admin-only').forEach(function (el) {
@@ -710,6 +712,14 @@ function previewImageFile(input) {
     };
     reader.readAsDataURL(input.files[0]);
   }
+  var countEl = document.getElementById('addImgCount');
+  if (countEl) {
+    if (input.files && input.files.length > 1) {
+      countEl.textContent = input.files.length + ' photos selected';
+    } else {
+      countEl.textContent = '';
+    }
+  }
 }
 
 function addInfoRow() {
@@ -733,7 +743,7 @@ function submitNewPlace() {
   var desc     = document.getElementById('addDesc').value.trim();
   var lat      = parseFloat(document.getElementById('addLat').value);
   var lng      = parseFloat(document.getElementById('addLng').value);
-  var imgFile  = document.getElementById('addImg').files[0];
+  var imgFiles = document.getElementById('addImg').files;
   var address  = document.getElementById('addBarangay').value.trim();
 
   if (!name)                  { showToast('⚠️ Please enter a place name.'); return; }
@@ -763,7 +773,12 @@ function submitNewPlace() {
   formData.append('longitude',   lng);
   formData.append('info',        JSON.stringify(info));
   formData.append('address',     address);
-  if (imgFile) formData.append('image', imgFile);
+  if (imgFiles.length > 0) {
+    formData.append('image', imgFiles[0]);
+    for (var fi = 0; fi < imgFiles.length; fi++) {
+      formData.append('images', imgFiles[fi]);
+    }
+  }
 
   showToast('⏳ Saving to database...');
 
@@ -826,11 +841,77 @@ function submitNewPlace() {
    14. DETAIL PANEL
 ═══════════════════════════════════════ */
 
+function renderGallery() {
+  var img = document.getElementById('detailImg');
+  var counter = document.getElementById('galleryCounter');
+  var prevBtn = document.getElementById('galleryPrevBtn');
+  var nextBtn = document.getElementById('galleryNextBtn');
+
+  if (galleryImages.length === 0) {
+    img.style.display = 'none';
+    counter.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    return;
+  }
+
+  img.src = galleryImages[galleryIndex];
+  img.style.display = 'block';
+  counter.textContent = (galleryIndex + 1) + '/' + galleryImages.length;
+
+  if (galleryImages.length <= 1) {
+    counter.style.display = 'none';
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+  } else {
+    counter.style.display = 'flex';
+    prevBtn.style.display = 'flex';
+    nextBtn.style.display = 'flex';
+  }
+}
+
+function galleryNext() {
+  if (galleryImages.length <= 1) return;
+  galleryIndex = (galleryIndex + 1) % galleryImages.length;
+  renderGallery();
+}
+
+function galleryPrev() {
+  if (galleryImages.length <= 1) return;
+  galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
+  renderGallery();
+}
+
 function openDetail(data) {
   currentMarkerData = data;
   var imgSrc = data.img || '';
   document.getElementById('detailImg').src = imgSrc;
   document.getElementById('detailImg').style.display = imgSrc ? 'block' : 'none';
+
+  // Fetch gallery images
+  if (data.id) {
+    fetch('/api/locations/' + data.id + '/images')
+      .then(function(r) { return r.json(); })
+      .then(function(images) {
+        if (images && images.length > 0) {
+          galleryImages = images.map(function(item) { return item.image_url; });
+        } else {
+          galleryImages = data.img ? [data.img] : [];
+        }
+        galleryIndex = 0;
+        renderGallery();
+      })
+      .catch(function() {
+        galleryImages = data.img ? [data.img] : [];
+        galleryIndex = 0;
+        renderGallery();
+      });
+  } else {
+    galleryImages = data.img ? [data.img] : [];
+    galleryIndex = 0;
+    renderGallery();
+  }
+
   document.getElementById('detailTag').textContent  = LABELS[normalizeCategory(data.category)] || LABELS[data.category] || data.category;
   document.getElementById('detailName').textContent = data.name;
   document.getElementById('detailCoords').innerHTML =
@@ -888,7 +969,7 @@ function saveEdit() {
 
   var name    = document.getElementById('editName').value.trim();
   var desc    = document.getElementById('editDesc').value.trim();
-  var imgFile = document.getElementById('editImg').files[0];
+  var imgFiles = document.getElementById('editImg').files;
 
   if (!name) { showToast('⚠️ Name cannot be empty.'); return; }
 
@@ -905,7 +986,12 @@ function saveEdit() {
   var formData = new FormData();
   formData.append('name',        name);
   formData.append('description', desc);
-  if (imgFile) formData.append('image', imgFile);
+  if (imgFiles.length > 0) {
+    formData.append('image', imgFiles[0]);
+    for (var ei = 0; ei < imgFiles.length; ei++) {
+      formData.append('images', imgFiles[ei]);
+    }
+  }
 
   showToast('⏳ Saving changes...');
 
@@ -920,7 +1006,7 @@ function saveEdit() {
     document.getElementById('detailDesc').textContent = desc;
 
     // Update image if a new one was uploaded
-    if (imgFile && data.image_path) {
+    if (imgFiles.length > 0 && data.image_path) {
       currentMarkerData.img = data.image_path;
       var detailImg = document.getElementById('detailImg');
       detailImg.src = data.image_path;
@@ -931,6 +1017,22 @@ function saveEdit() {
 
     // Clear the file input
     document.getElementById('editImg').value = '';
+    var editCountEl = document.getElementById('editImgCount');
+    if (editCountEl) editCountEl.textContent = '';
+
+    // Refresh gallery images
+    fetch('/api/locations/' + currentMarkerData.id + '/images')
+      .then(function(r) { return r.json(); })
+      .then(function(images) {
+        if (images && images.length > 0) {
+          galleryImages = images.map(function(item) { return item.image_url; });
+        } else {
+          galleryImages = currentMarkerData.img ? [currentMarkerData.img] : [];
+        }
+        galleryIndex = 0;
+        renderGallery();
+      })
+      .catch(function() {});
 
     // Refresh the marker's popup HTML so name/desc/image changes
     // appear immediately on the map without needing a hard refresh.
@@ -955,6 +1057,14 @@ function previewEditImage(input) {
       hint.style.display = 'none';
     };
     reader.readAsDataURL(input.files[0]);
+  }
+  var countEl = document.getElementById('editImgCount');
+  if (countEl) {
+    if (input.files && input.files.length > 1) {
+      countEl.textContent = input.files.length + ' photos selected';
+    } else {
+      countEl.textContent = '';
+    }
   }
 }
 
