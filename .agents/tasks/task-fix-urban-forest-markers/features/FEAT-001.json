@@ -31,5 +31,5 @@
     "node --check script.js"
   ],
   "blocked_reason": null,
-  "findings": "All Python files pass AST parsing. JS file passes node --check (requires NODE_OPTIONS='' to avoid unrelated proxy-bootstrap preload error in sandbox). Cannot run full app or DB operations due to missing psycopg2/DATABASE_URL but normalization logic verified independently with unit-style assertions."
+  "findings": "All Python files pass AST parsing. JS file passes node --check (requires NODE_OPTIONS='' to avoid unrelated proxy-bootstrap preload error in sandbox). Cannot run full app or DB operations due to missing psycopg2/DATABASE_URL but normalization logic verified independently with unit-style assertions. Review followup (commit 691b8b6): fixed missed normalizeCategory in add-location emoji lookup, added cross-reference comments between Python and JS alias maps, moved BUILTIN_CATEGORIES above normalization block to eliminate forward reference, added docstring note about pass-through behavior for custom categories."
 }
