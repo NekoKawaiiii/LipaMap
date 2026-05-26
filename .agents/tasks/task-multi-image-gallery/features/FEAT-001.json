@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "feat",
   "description": "Add backend support for multi-image storage: new location_images table, new API endpoints, and update existing endpoints to handle multiple file uploads",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. In models/location_model.py, add a new function init_location_images_table() that creates: CREATE TABLE IF NOT EXISTS location_images (id SERIAL PRIMARY KEY, location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE, image_url TEXT NOT NULL, display_order INTEGER NOT NULL DEFAULT 0). Add a unique constraint on (location_id, image_url).",
     "2. In models/location_model.py, add CRUD functions for the images table: get_images_for_location(location_id) returns list of {id, image_url, display_order} ordered by display_order; add_location_image(location_id, image_url, display_order) inserts a row; delete_location_image(image_id) removes a row.",
@@ -30,5 +30,5 @@
     "grep -n 'location_images' models/location_model.py controllers/location_controller.py app.py"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All three files pass py_compile validation. The POST endpoint now returns the new location id from create_location() to use for image inserts. The PUT endpoint fetches existing images to determine max display_order before adding new ones."
 }
