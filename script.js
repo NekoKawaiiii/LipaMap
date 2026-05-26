@@ -503,6 +503,10 @@ function toggleHeatmap(show) {
     // Hide user location if present
     if (userLocationMarker && map.hasLayer(userLocationMarker)) map.removeLayer(userLocationMarker);
     if (userLocationCircle && map.hasLayer(userLocationCircle))  map.removeLayer(userLocationCircle);
+    // Temporarily hide city boundary so its tooltip doesn't block per-barangay tooltips
+    if (map.hasLayer(boundaryGroup)) map.removeLayer(boundaryGroup);
+    // Hide barangay borders (choropleth draws its own outlines)
+    if (brgyBorderLayer && map.hasLayer(brgyBorderLayer)) map.removeLayer(brgyBorderLayer);
     // Show choropleth
     buildChoropleth();
   } else {
@@ -518,6 +522,10 @@ function toggleHeatmap(show) {
     // Restore user location
     if (userLocationMarker) map.addLayer(userLocationMarker);
     if (userLocationCircle)  map.addLayer(userLocationCircle);
+    // Restore city boundary
+    if (boundaryVisible && !map.hasLayer(boundaryGroup)) boundaryGroup.addTo(map);
+    // Restore barangay borders
+    if (brgyBorderLayer && !map.hasLayer(brgyBorderLayer)) brgyBorderLayer.addTo(map);
     // Re-activate all chips visually
     document.querySelectorAll('.chip').forEach(function(c) {
       c.classList.add('active');
