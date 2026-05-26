@@ -287,11 +287,13 @@ def get_images_for_location(location_id):
 
 
 def add_location_image(location_id, image_url, display_order):
-    """Insert a new image row for a location."""
+    """Insert a new image row for a location. Skips duplicates."""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        'INSERT INTO location_images (location_id, image_url, display_order) VALUES (%s, %s, %s)',
+        '''INSERT INTO location_images (location_id, image_url, display_order)
+           VALUES (%s, %s, %s)
+           ON CONFLICT (location_id, image_url) DO NOTHING''',
         (location_id, image_url, display_order)
     )
     conn.commit()
@@ -299,11 +301,27 @@ def add_location_image(location_id, image_url, display_order):
     conn.close()
 
 
-def delete_location_image(image_id):
-    """Remove an image row by its id."""
+def delete_location_image(image_id, location_id):
+    """Remove an image row by its id, scoped to the given location."""
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM location_images WHERE id = %s', (image_id,))
+    cursor.execute(
+        'DELETE FROM location_images WHERE id = %s AND location_id = %s',
+        (image_id, location_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def delete_primary_location_image(location_id):
+    """Remove the display_order=0 image row for a location (old primary)."""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'DELETE FROM location_images WHERE location_id = %s AND display_order = 0',
+        (location_id,)
+    )
     conn.commit()
     cursor.close()
     conn.close()

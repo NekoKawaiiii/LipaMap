@@ -775,7 +775,7 @@ function submitNewPlace() {
   formData.append('address',     address);
   if (imgFiles.length > 0) {
     formData.append('image', imgFiles[0]);
-    for (var fi = 0; fi < imgFiles.length; fi++) {
+    for (var fi = 1; fi < imgFiles.length; fi++) {
       formData.append('images', imgFiles[fi]);
     }
   }
@@ -988,7 +988,7 @@ function saveEdit() {
   formData.append('description', desc);
   if (imgFiles.length > 0) {
     formData.append('image', imgFiles[0]);
-    for (var ei = 0; ei < imgFiles.length; ei++) {
+    for (var ei = 1; ei < imgFiles.length; ei++) {
       formData.append('images', imgFiles[ei]);
     }
   }

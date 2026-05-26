@@ -13,6 +13,7 @@ from models.location_model import (
     get_images_for_location,
     add_location_image,
     delete_location_image,
+    delete_primary_location_image,
 )
 from models.category_model import normalize_category_key
 
@@ -85,6 +86,7 @@ def edit_location(location_id):
 
         # If a new primary image was uploaded, also add it to location_images at display_order=0
         if image_path:
+            delete_primary_location_image(location_id)
             add_location_image(location_id, image_path, 0)
 
         # Handle additional images
@@ -130,7 +132,7 @@ def get_location_images(location_id):
 @location_bp.route('/api/locations/<int:location_id>/images/<int:image_id>', methods=['DELETE'])
 def remove_location_image(location_id, image_id):
     try:
-        delete_location_image(image_id)
+        delete_location_image(image_id, location_id)
         return jsonify({'message': 'Image deleted!'}), 200
     except Exception as e:
         print('Error:', str(e))
