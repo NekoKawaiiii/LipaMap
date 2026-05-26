@@ -11,6 +11,7 @@ from models.location_model import (
     update_location,
     delete_location,
 )
+from models.category_model import normalize_category_key
 
 location_bp = Blueprint('locations', __name__)
 
@@ -26,6 +27,7 @@ def add_location():
     try:
         name        = request.form.get('name')
         category    = request.form.get('category')
+        category    = normalize_category_key(category)
         description = request.form.get('description')
         latitude    = request.form.get('latitude')
         longitude   = request.form.get('longitude')

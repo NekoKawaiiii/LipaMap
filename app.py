@@ -21,7 +21,7 @@ load_dotenv()
 import config  # noqa: F401 — runs cloudinary.config() on import
 
 # ─── MODELS (DB init + seed) ───
-from models.location_model import init_locations_table, seed_locations
+from models.location_model import init_locations_table, seed_locations, normalize_existing_categories
 from models.category_model import init_categories_table, seed_categories
 
 # ─── CONTROLLERS (Blueprints) ───
@@ -60,6 +60,7 @@ init_locations_table()
 init_categories_table()
 seed_categories()
 seed_locations()
+normalize_existing_categories()
 print('✅ LipaMap is ready!')
 
 # ─── DEV SERVER ───

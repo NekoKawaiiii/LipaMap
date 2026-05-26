@@ -15,6 +15,39 @@ BUILTIN_CATEGORIES = [
 ]
 
 
+# ─── CATEGORY KEY NORMALIZATION ───
+# Known aliases that map to canonical category keys.
+# NOTE: This map must be kept in sync with _CATEGORY_ALIAS_MAP in script.js
+_ALIAS_MAP = {
+    'urban_forest': 'forest',
+    'urbanforest': 'forest',
+    'urban_forests': 'forest',
+    'parks': 'park',
+    'gardens': 'garden',
+    'wetlands': 'wetland',
+    'recycling': 'recycle',
+    'recycling_center': 'recycle',
+    'recycling_centers': 'recycle',
+    'collection_point': 'collection',
+    'collection_points': 'collection',
+    'composting': 'compost',
+}
+
+_CANONICAL_NAMES = {cat['name'] for cat in BUILTIN_CATEGORIES}
+
+
+def normalize_category_key(raw_key):
+    """Normalize a raw category key to its canonical form."""
+    if not raw_key:
+        return raw_key
+    normalized = raw_key.strip().lower().replace(' ', '_').replace('-', '_')
+    if normalized in _CANONICAL_NAMES:
+        return normalized
+    if normalized in _ALIAS_MAP:
+        return _ALIAS_MAP[normalized]
+    return normalized
+
+
 def get_all_categories():
     """Return all categories from the database."""
     conn = get_db()
