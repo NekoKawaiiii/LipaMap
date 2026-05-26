@@ -2,7 +2,7 @@
   "id": "FEAT-001",
   "type": "fix",
   "description": "Fix category key mismatch causing Urban Forest markers to show default pin emoji. Add normalization in backend (on save and at startup) and frontend (in makeIcon and label display) so that non-canonical category variations (urban_forest, Urban Forest, etc.) all resolve to the canonical key 'forest'.",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "Step 1 - Backend category normalization utility: In models/category_model.py, add a function `normalize_category_key(raw_key)` that: (a) strips whitespace, (b) lowercases, (c) replaces spaces/hyphens with underscores, (d) checks against a mapping of known aliases to canonical names. The alias map should include: {'urban_forest': 'forest', 'urbanforest': 'forest', 'urban_forests': 'forest', 'parks': 'park', 'gardens': 'garden', 'wetlands': 'wetland', 'recycling': 'recycle', 'recycling_center': 'recycle', 'recycling_centers': 'recycle', 'collection_point': 'collection', 'collection_points': 'collection', 'composting': 'compost'}. If the normalized value already matches a BUILTIN_CATEGORIES name exactly, return it. If found in alias map, return the canonical name. Otherwise return the normalized key as-is (for custom categories).",
     "Step 2 - Normalize on save: In controllers/location_controller.py add_location(), after getting the category from request.form, call normalize_category_key(category) before passing to create_location(). Import normalize_category_key from models.category_model.",
@@ -31,5 +31,5 @@
     "node --check script.js"
   ],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "All Python files pass AST parsing. JS file passes node --check (requires NODE_OPTIONS='' to avoid unrelated proxy-bootstrap preload error in sandbox). Cannot run full app or DB operations due to missing psycopg2/DATABASE_URL but normalization logic verified independently with unit-style assertions."
 }
