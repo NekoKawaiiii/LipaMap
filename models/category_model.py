@@ -6,6 +6,8 @@
 from config import get_db
 
 
+# ─── CATEGORY KEY NORMALIZATION ───
+
 BUILTIN_CATEGORIES = [
     {'name': 'park',       'label': 'Parks',             'emoji': '🌳', 'color': '#3b82f6', 'group_type': 'green'},
     {'name': 'forest',     'label': 'Urban Forests',      'emoji': '🌲', 'color': '#166534', 'group_type': 'green'},
@@ -13,6 +15,60 @@ BUILTIN_CATEGORIES = [
     {'name': 'recycle',    'label': 'Recycling Centers',  'emoji': '♻️', 'color': '#f59e0b', 'group_type': 'waste'},
     {'name': 'collection', 'label': 'Collection Points',  'emoji': '🚛', 'color': '#6b7280', 'group_type': 'waste'},
 ]
+
+# Canonical category names (keys used in BUILTIN_CATEGORIES)
+_CANONICAL_NAMES = None  # populated lazily
+
+
+def _get_canonical_names():
+    global _CANONICAL_NAMES
+    if _CANONICAL_NAMES is None:
+        _CANONICAL_NAMES = {cat['name'] for cat in BUILTIN_CATEGORIES}
+    return _CANONICAL_NAMES
+
+
+# Known aliases that map to canonical category keys.
+# NOTE: This map must be kept in sync with _CATEGORY_ALIAS_MAP in script.js
+_ALIAS_MAP = {
+    'urban_forest': 'forest',
+    'urbanforest': 'forest',
+    'urban_forests': 'forest',
+    'parks': 'park',
+    'gardens': 'garden',
+    'wetlands': 'wetland',
+    'recycling': 'recycle',
+    'recycling_center': 'recycle',
+    'recycling_centers': 'recycle',
+    'collection_point': 'collection',
+    'collection_points': 'collection',
+    'composting': 'compost',
+}
+
+
+def normalize_category_key(raw_key):
+    """Normalize a raw category key to its canonical form.
+
+    Steps:
+    1. Strip whitespace
+    2. Lowercase
+    3. Replace spaces/hyphens with underscores
+    4. Check if already a canonical name (from BUILTIN_CATEGORIES)
+    5. Check alias map
+    6. Return normalized key as-is (for custom categories)
+
+    Note: Keys not in BUILTIN_CATEGORIES (e.g. custom categories like 'garden',
+    'compost') pass through unchanged at step 6. This is intentional -- they are
+    valid category keys that simply are not part of the built-in seed list.
+    """
+    if not raw_key:
+        return raw_key
+    normalized = raw_key.strip().lower().replace(' ', '_').replace('-', '_')
+    canonical_names = _get_canonical_names()
+    if normalized in canonical_names:
+        return normalized
+    if normalized in _ALIAS_MAP:
+        return _ALIAS_MAP[normalized]
+    return normalized
 
 
 def get_all_categories():

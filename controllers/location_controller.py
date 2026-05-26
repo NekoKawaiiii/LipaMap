@@ -11,6 +11,7 @@ from models.location_model import (
     update_location,
     delete_location,
 )
+from models.category_model import normalize_category_key
 
 location_bp = Blueprint('locations', __name__)
 
@@ -31,6 +32,9 @@ def add_location():
         longitude   = request.form.get('longitude')
         info        = request.form.get('info')
         address     = request.form.get('address')
+
+        # Normalize category key to canonical form
+        category = normalize_category_key(category)
 
         # Upload image to Cloudinary if provided
         image_path = None

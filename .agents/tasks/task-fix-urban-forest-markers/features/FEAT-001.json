@@ -1,0 +1,35 @@
+{
+  "id": "FEAT-001",
+  "type": "fix",
+  "description": "Fix category key mismatch causing Urban Forest markers to show default pin emoji. Add normalization in backend (on save and at startup) and frontend (in makeIcon and label display) so that non-canonical category variations (urban_forest, Urban Forest, etc.) all resolve to the canonical key 'forest'.",
+  "status": "completed",
+  "steps": [
+    "Step 1 - Backend category normalization utility: In models/category_model.py, add a function `normalize_category_key(raw_key)` that: (a) strips whitespace, (b) lowercases, (c) replaces spaces/hyphens with underscores, (d) checks against a mapping of known aliases to canonical names. The alias map should include: {'urban_forest': 'forest', 'urbanforest': 'forest', 'urban_forests': 'forest', 'parks': 'park', 'gardens': 'garden', 'wetlands': 'wetland', 'recycling': 'recycle', 'recycling_center': 'recycle', 'recycling_centers': 'recycle', 'collection_point': 'collection', 'collection_points': 'collection', 'composting': 'compost'}. If the normalized value already matches a BUILTIN_CATEGORIES name exactly, return it. If found in alias map, return the canonical name. Otherwise return the normalized key as-is (for custom categories).",
+    "Step 2 - Normalize on save: In controllers/location_controller.py add_location(), after getting the category from request.form, call normalize_category_key(category) before passing to create_location(). Import normalize_category_key from models.category_model.",
+    "Step 3 - Startup migration: In models/location_model.py, add a function `normalize_existing_categories()` that queries all distinct category values from the locations table, runs each through normalize_category_key(), and for any that differ from the stored value, UPDATE those rows to use the canonical key. Call this function in app.py after seed_locations() runs.",
+    "Step 4 - Frontend normalization: In script.js, add a `normalizeCategory(cat)` function near the top (after COLORS/LABELS declaration, around line where makeIcon is defined). It should: (a) lowercase and replace spaces/hyphens with underscores, (b) check a JS alias map similar to the backend one, (c) check if result exists in COLORS, if yes return it, (d) otherwise return the original. Update makeIcon(category) to use `var c = COLORS[normalizeCategory(category)] || COLORS[category] || '#6b7280'`. Update the `openDetail()` function's tag display to use `LABELS[normalizeCategory(data.category)] || LABELS[data.category] || data.category`. Update the Recent Updates emoji lookup in loadLocationsFromDB() to use normalizeCategory as well.",
+    "Step 5 - Fix truncated label in detail panel: In script.js openDetail(), the line `document.getElementById('detailTag').textContent = LABELS[data.category] || data.category;` should become `document.getElementById('detailTag').textContent = LABELS[normalizeCategory(data.category)] || LABELS[data.category] || data.category;` - this ensures that even if a location has a non-canonical key, the full label 'Urban Forests' is shown instead of a truncated raw key."
+  ],
+  "acceptance_criteria": [
+    "normalize_category_key('urban_forest') returns 'forest'",
+    "normalize_category_key('Urban Forest') returns 'forest'",
+    "normalize_category_key('forest') returns 'forest' (already canonical)",
+    "normalize_category_key('wetland') returns 'wetland' (unchanged)",
+    "The location controller imports and uses normalize_category_key before saving",
+    "normalize_existing_categories() is called at startup in app.py",
+    "Frontend normalizeCategory('urban_forest') returns 'forest'",
+    "makeIcon uses normalizeCategory to look up COLORS",
+    "openDetail uses normalizeCategory to look up LABELS for the detail tag",
+    "Python files parse without syntax errors (python -c 'import ast; ast.parse(open(f).read())' for each .py file)",
+    "JavaScript file parses without syntax errors (node --check script.js)"
+  ],
+  "verification": [
+    "python3 -c \"import ast; ast.parse(open('models/category_model.py').read()); print('OK')\"",
+    "python3 -c \"import ast; ast.parse(open('models/location_model.py').read()); print('OK')\"",
+    "python3 -c \"import ast; ast.parse(open('controllers/location_controller.py').read()); print('OK')\"",
+    "python3 -c \"import ast; ast.parse(open('app.py').read()); print('OK')\"",
+    "node --check script.js"
+  ],
+  "blocked_reason": null,
+  "findings": "All Python files pass AST parsing. JS file passes node --check (requires NODE_OPTIONS='' to avoid unrelated proxy-bootstrap preload error in sandbox). Cannot run full app or DB operations due to missing psycopg2/DATABASE_URL but normalization logic verified independently with unit-style assertions. Review followup (commit 691b8b6): fixed missed normalizeCategory in add-location emoji lookup, added cross-reference comments between Python and JS alias maps, moved BUILTIN_CATEGORIES above normalization block to eliminate forward reference, added docstring note about pass-through behavior for custom categories."
+}
